@@ -30,3 +30,4 @@ class LocalNotificationRuleRepository extends LocalRepositoryBase
     throw UnimplementedError();
   }
 }
+

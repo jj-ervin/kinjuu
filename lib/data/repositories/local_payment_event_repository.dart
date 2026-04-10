@@ -18,3 +18,4 @@ class LocalPaymentEventRepository extends LocalRepositoryBase
     throw UnimplementedError();
   }
 }
+

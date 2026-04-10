@@ -29,3 +29,4 @@ class LocalCardRepository extends LocalRepositoryBase implements CardRepository 
     throw UnimplementedError();
   }
 }
+
