@@ -15,6 +15,20 @@ class AccountModel extends Account {
     required super.updatedAt,
   });
 
+  factory AccountModel.fromEntity(Account account) {
+    return AccountModel(
+      id: account.id,
+      name: account.name,
+      institutionName: account.institutionName,
+      accountType: account.accountType,
+      maskedReference: account.maskedReference,
+      notes: account.notes,
+      isArchived: account.isArchived,
+      createdAt: account.createdAt,
+      updatedAt: account.updatedAt,
+    );
+  }
+
   factory AccountModel.fromMap(Map<String, Object?> map) {
     return AccountModel(
       id: ModelUtils.readString(map, 'id'),
@@ -45,4 +59,3 @@ class AccountModel extends Account {
     };
   }
 }
-

@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinjuu/app/state/kinjuu_app_controller.dart';
+import 'package:kinjuu/data/database/local_database.dart';
+import 'package:kinjuu/data/repositories/local_payment_event_repository.dart';
 import 'package:kinjuu/data/repositories/local_repository_base.dart';
 import 'package:kinjuu/domain/enums/account_type.dart';
 import 'package:kinjuu/domain/enums/card_type.dart';
@@ -10,10 +12,13 @@ import 'package:kinjuu/domain/enums/recurrence_rule_style.dart';
 void main() {
   group('KinjuuAppController', () {
     late KinjuuAppController controller;
+    late LocalDatabase database;
 
     setUp(() async {
+      database = LocalDatabase(databaseName: 'kinjuu_test.db');
+      await database.reset();
       LocalRepositoryBase.store.clear();
-      controller = KinjuuAppController();
+      controller = KinjuuAppController(database: database);
       await controller.load();
     });
 
@@ -114,6 +119,65 @@ void main() {
         ),
         throwsArgumentError,
       );
+    });
+
+    test('persists core data across a fresh controller load', () async {
+      await controller.saveAccount(
+        name: 'Checking',
+        institutionName: 'Credit Union',
+        accountType: AccountType.checking,
+        maskedReference: '...1234',
+        notes: 'Primary',
+      );
+      await controller.saveCard(
+        name: 'Visa',
+        issuer: 'Example Bank',
+        cardType: CardType.credit,
+        maskedReference: '...4242',
+        statementDay: 12,
+        dueDay: 25,
+        notes: 'Rewards',
+      );
+      await controller.saveObligation(
+        title: 'Internet bill',
+        obligationType: ObligationType.bill,
+        dueDate: DateTime.now().add(const Duration(days: 1)),
+        recurrenceRule: RecurrenceRuleStyle.monthly,
+        expectedAmount: 80,
+        minimumAmount: null,
+        currencyCode: 'USD',
+        autopayExpected: false,
+        category: 'Utilities',
+        notes: 'Manual reminder',
+        linkedAccountId: controller.accounts.first.id,
+        linkedCardId: controller.cards.first.id,
+      );
+
+      final obligationId = controller.obligations.first.id;
+      await controller.markObligationPending(obligationId);
+
+      final paymentEventRepository = LocalPaymentEventRepository(database);
+      final beforeReloadEvents = await paymentEventRepository.getByObligationId(
+        obligationId,
+      );
+      expect(beforeReloadEvents, hasLength(1));
+
+      final reloadedController = KinjuuAppController(database: database);
+      await reloadedController.load();
+
+      expect(reloadedController.accounts, hasLength(1));
+      expect(reloadedController.cards, hasLength(1));
+      expect(reloadedController.obligations, hasLength(1));
+      expect(
+        reloadedController.obligations.first.status,
+        ObligationStatus.pending,
+      );
+      expect(reloadedController.auditEntries, hasLength(greaterThanOrEqualTo(4)));
+
+      final afterReloadEvents = await paymentEventRepository.getByObligationId(
+        obligationId,
+      );
+      expect(afterReloadEvents, hasLength(1));
     });
   });
 }

@@ -7,9 +7,5 @@ class DatabaseBootstrap {
 
   Future<void> initialize() async {
     await database.open();
-
-    for (final statement in database.bootstrapStatements) {
-      await database.execute(statement);
-    }
   }
 }

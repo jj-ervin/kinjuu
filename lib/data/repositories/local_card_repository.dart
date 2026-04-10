@@ -1,5 +1,6 @@
 import '../../domain/entities/tracked_card.dart';
 import '../../domain/repositories/card_repository.dart';
+import '../models/tracked_card_model.dart';
 import 'local_repository_base.dart';
 
 class LocalCardRepository extends LocalRepositoryBase implements CardRepository {
@@ -7,12 +8,12 @@ class LocalCardRepository extends LocalRepositoryBase implements CardRepository 
 
   @override
   Future<void> archive(String id) async {
-    final existing = LocalRepositoryBase.store.cards[id];
+    final existing = await getById(id);
     if (existing == null) {
       return;
     }
 
-    LocalRepositoryBase.store.cards[id] = TrackedCard(
+    await save(TrackedCard(
       id: existing.id,
       name: existing.name,
       issuer: existing.issuer,
@@ -24,23 +25,34 @@ class LocalCardRepository extends LocalRepositoryBase implements CardRepository 
       isArchived: true,
       createdAt: existing.createdAt,
       updatedAt: DateTime.now(),
-    );
+    ));
   }
 
   @override
   Future<List<TrackedCard>> getAll() async {
-    final items = LocalRepositoryBase.store.cards.values.toList(growable: false);
+    final rows = await database.query(
+      'SELECT * FROM cards ORDER BY updated_at DESC',
+    );
+    final items =
+        rows.map(TrackedCardModel.fromMap).toList(growable: false);
     items.sort((left, right) => right.updatedAt.compareTo(left.updatedAt));
     return items;
   }
 
   @override
   Future<TrackedCard?> getById(String id) async {
-    return LocalRepositoryBase.store.cards[id];
+    final rows = await database.query(
+      'SELECT * FROM cards WHERE id = ? LIMIT 1',
+      <Object?>[id],
+    );
+    if (rows.isEmpty) {
+      return null;
+    }
+    return TrackedCardModel.fromMap(rows.first);
   }
 
   @override
   Future<void> save(TrackedCard card) async {
-    LocalRepositoryBase.store.cards[card.id] = card;
+    await database.insert('cards', TrackedCardModel.fromEntity(card).toMap());
   }
 }

@@ -1,6 +1,7 @@
 import '../../domain/entities/obligation.dart';
 import '../../domain/enums/obligation_status.dart';
 import '../../domain/repositories/obligation_repository.dart';
+import '../models/obligation_model.dart';
 import 'local_repository_base.dart';
 
 class LocalObligationRepository extends LocalRepositoryBase
@@ -9,12 +10,12 @@ class LocalObligationRepository extends LocalRepositoryBase
 
   @override
   Future<void> archive(String id) async {
-    final existing = LocalRepositoryBase.store.obligations[id];
+    final existing = await getById(id);
     if (existing == null) {
       return;
     }
 
-    LocalRepositoryBase.store.obligations[id] = Obligation(
+    await save(Obligation(
       id: existing.id,
       title: existing.title,
       obligationType: existing.obligationType,
@@ -33,25 +34,40 @@ class LocalObligationRepository extends LocalRepositoryBase
       notes: existing.notes,
       createdAt: existing.createdAt,
       updatedAt: DateTime.now(),
-    );
+    ));
   }
 
   @override
   Future<List<Obligation>> getAll() async {
+    final rows = await database.query(
+      'SELECT * FROM obligations ORDER BY due_date ASC',
+    );
     final items =
-        LocalRepositoryBase.store.obligations.values.toList(growable: false);
+        rows.map(ObligationModel.fromMap).toList(growable: false);
     items.sort((left, right) => left.dueDate.compareTo(right.dueDate));
     return items;
   }
 
   @override
   Future<Obligation?> getById(String id) async {
-    return LocalRepositoryBase.store.obligations[id];
+    final rows = await database.query(
+      'SELECT * FROM obligations WHERE id = ? LIMIT 1',
+      <Object?>[id],
+    );
+    if (rows.isEmpty) {
+      return null;
+    }
+    return ObligationModel.fromMap(rows.first);
   }
 
   @override
   Future<List<Obligation>> getUpcoming() async {
-    final items = LocalRepositoryBase.store.obligations.values
+    final rows = await database.query(
+      'SELECT * FROM obligations WHERE status != ? ORDER BY due_date ASC',
+      <Object?>[ObligationStatus.archived.storageValue],
+    );
+    final items = rows
+        .map(ObligationModel.fromMap)
         .where((entry) => entry.status != ObligationStatus.archived)
         .toList(growable: false);
     items.sort((left, right) => left.dueDate.compareTo(right.dueDate));
@@ -60,17 +76,20 @@ class LocalObligationRepository extends LocalRepositoryBase
 
   @override
   Future<void> save(Obligation obligation) async {
-    LocalRepositoryBase.store.obligations[obligation.id] = obligation;
+    await database.insert(
+      'obligations',
+      ObligationModel.fromEntity(obligation).toMap(),
+    );
   }
 
   @override
   Future<void> updateStatus(String id, ObligationStatus status) async {
-    final existing = LocalRepositoryBase.store.obligations[id];
+    final existing = await getById(id);
     if (existing == null) {
       return;
     }
 
-    LocalRepositoryBase.store.obligations[id] = Obligation(
+    await save(Obligation(
       id: existing.id,
       title: existing.title,
       obligationType: existing.obligationType,
@@ -89,6 +108,6 @@ class LocalObligationRepository extends LocalRepositoryBase
       notes: existing.notes,
       createdAt: existing.createdAt,
       updatedAt: DateTime.now(),
-    );
+    ));
   }
 }

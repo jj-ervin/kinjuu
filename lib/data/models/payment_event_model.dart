@@ -15,6 +15,19 @@ class PaymentEventModel extends PaymentEvent {
     required super.timeLoc,
   });
 
+  factory PaymentEventModel.fromEntity(PaymentEvent event) {
+    return PaymentEventModel(
+      id: event.id,
+      obligationId: event.obligationId,
+      eventType: event.eventType,
+      eventDate: event.eventDate,
+      amount: event.amount,
+      note: event.note,
+      createdAt: event.createdAt,
+      timeLoc: event.timeLoc,
+    );
+  }
+
   factory PaymentEventModel.fromMap(Map<String, Object?> map) {
     return PaymentEventModel(
       id: ModelUtils.readString(map, 'id'),

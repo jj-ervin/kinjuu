@@ -1,5 +1,6 @@
 import '../../domain/entities/audit_entry.dart';
 import '../../domain/repositories/audit_repository.dart';
+import '../models/audit_entry_model.dart';
 import 'local_repository_base.dart';
 
 class LocalAuditRepository extends LocalRepositoryBase implements AuditRepository {
@@ -7,13 +8,20 @@ class LocalAuditRepository extends LocalRepositoryBase implements AuditRepositor
 
   @override
   Future<List<AuditEntry>> getRecent({int limit = 50}) async {
-    final items = LocalRepositoryBase.store.auditEntries.values.toList();
+    final rows = await database.query(
+      'SELECT * FROM audit_entries ORDER BY created_at DESC LIMIT ?',
+      <Object?>[limit],
+    );
+    final items = rows.map(AuditEntryModel.fromMap).toList();
     items.sort((left, right) => right.createdAt.compareTo(left.createdAt));
     return items.take(limit).toList(growable: false);
   }
 
   @override
   Future<void> save(AuditEntry entry) async {
-    LocalRepositoryBase.store.auditEntries[entry.id] = entry;
+    await database.insert(
+      'audit_entries',
+      AuditEntryModel.fromEntity(entry).toMap(),
+    );
   }
 }

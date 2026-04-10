@@ -27,6 +27,29 @@ class ObligationModel extends Obligation {
     required super.updatedAt,
   });
 
+  factory ObligationModel.fromEntity(Obligation obligation) {
+    return ObligationModel(
+      id: obligation.id,
+      title: obligation.title,
+      obligationType: obligation.obligationType,
+      sourceType: obligation.sourceType,
+      linkedAccountId: obligation.linkedAccountId,
+      linkedCardId: obligation.linkedCardId,
+      expectedAmount: obligation.expectedAmount,
+      minimumAmount: obligation.minimumAmount,
+      currencyCode: obligation.currencyCode,
+      dueDate: obligation.dueDate,
+      statementDate: obligation.statementDate,
+      recurrenceRule: obligation.recurrenceRule,
+      status: obligation.status,
+      autopayExpected: obligation.autopayExpected,
+      category: obligation.category,
+      notes: obligation.notes,
+      createdAt: obligation.createdAt,
+      updatedAt: obligation.updatedAt,
+    );
+  }
+
   factory ObligationModel.fromMap(Map<String, Object?> map) {
     return ObligationModel(
       id: ModelUtils.readString(map, 'id'),

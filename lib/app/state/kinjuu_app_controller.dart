@@ -30,6 +30,7 @@ import '../../services/notifications/obligation_status_service_impl.dart';
 
 class KinjuuAppController extends ChangeNotifier {
   KinjuuAppController({
+    LocalDatabase? database,
     AccountRepository? accountRepository,
     CardRepository? cardRepository,
     ObligationRepository? obligationRepository,
@@ -37,13 +38,17 @@ class KinjuuAppController extends ChangeNotifier {
     AuditRepository? auditRepository,
     ObligationStatusServiceImpl? obligationStatusService,
   })  : _accountRepository =
-            accountRepository ?? LocalAccountRepository(LocalDatabase()),
-        _cardRepository = cardRepository ?? LocalCardRepository(LocalDatabase()),
+            accountRepository ?? LocalAccountRepository(database ?? LocalDatabase()),
+        _cardRepository =
+            cardRepository ?? LocalCardRepository(database ?? LocalDatabase()),
         _obligationRepository =
-            obligationRepository ?? LocalObligationRepository(LocalDatabase()),
+            obligationRepository ??
+                LocalObligationRepository(database ?? LocalDatabase()),
         _paymentEventRepository =
-            paymentEventRepository ?? LocalPaymentEventRepository(LocalDatabase()),
-        _auditRepository = auditRepository ?? LocalAuditRepository(LocalDatabase()),
+            paymentEventRepository ??
+                LocalPaymentEventRepository(database ?? LocalDatabase()),
+        _auditRepository =
+            auditRepository ?? LocalAuditRepository(database ?? LocalDatabase()),
         _obligationStatusService =
             obligationStatusService ?? ObligationStatusServiceImpl();
 

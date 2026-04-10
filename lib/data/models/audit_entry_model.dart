@@ -15,6 +15,18 @@ class AuditEntryModel extends AuditEntry {
     required super.timeLoc,
   });
 
+  factory AuditEntryModel.fromEntity(AuditEntry entry) {
+    return AuditEntryModel(
+      id: entry.id,
+      entityType: entry.entityType,
+      entityId: entry.entityId,
+      actionType: entry.actionType,
+      summary: entry.summary,
+      createdAt: entry.createdAt,
+      timeLoc: entry.timeLoc,
+    );
+  }
+
   factory AuditEntryModel.fromMap(Map<String, Object?> map) {
     return AuditEntryModel(
       id: ModelUtils.readString(map, 'id'),

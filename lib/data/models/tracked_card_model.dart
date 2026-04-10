@@ -17,6 +17,22 @@ class TrackedCardModel extends TrackedCard {
     required super.updatedAt,
   });
 
+  factory TrackedCardModel.fromEntity(TrackedCard card) {
+    return TrackedCardModel(
+      id: card.id,
+      name: card.name,
+      issuer: card.issuer,
+      cardType: card.cardType,
+      maskedReference: card.maskedReference,
+      statementDay: card.statementDay,
+      dueDay: card.dueDay,
+      notes: card.notes,
+      isArchived: card.isArchived,
+      createdAt: card.createdAt,
+      updatedAt: card.updatedAt,
+    );
+  }
+
   factory TrackedCardModel.fromMap(Map<String, Object?> map) {
     return TrackedCardModel(
       id: ModelUtils.readString(map, 'id'),
@@ -49,4 +65,3 @@ class TrackedCardModel extends TrackedCard {
     };
   }
 }
-

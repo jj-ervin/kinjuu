@@ -448,3 +448,69 @@ Agent/Model: Codex (GPT-5-based)
 ### Handoff notes
 - No hidden out-of-scope feature drift was found in the current repo state.
 - Remaining stubs are now documented more clearly as acceptable scaffold debt for the current MVP stage.
+
+## PASS 0007 — Local Persistence Integration
+
+### time.loc
+version: 1
+stamp.local: 2026-04-10T15:58:06-07:00
+stamp.local.day: 2026-04-10
+stamp.utc: 2026-04-10T22:58:06Z
+stamp.utc.day: 2026-04-10
+geo.city:
+geo.region:
+geo.country: USA
+geo.source: environment_estimate
+seq: pass-0007-log-1
+sig: unavailable
+geo.lat:
+geo.lon:
+geo.alt:
+
+Date: 2026-04-10
+Agent/Model: Codex (GPT-5-based)
+
+### Completed
+- Replaced the active in-memory CRUD backing for accounts, cards, obligations, payment events, and audit entries with SQLite-backed local persistence.
+- Wired the existing repository contracts to the real local database helper while preserving the current controller and UI flows.
+- Added restart-survival test coverage for the core MVP persistence path.
+- Verified the pass with `flutter analyze` and `flutter test`.
+
+### Files created/updated
+- `HANDSHAKE_PASS_0007.md`
+- `HANDOFF_PASS_0007.md`
+- `pubspec.yaml`
+- `pubspec.lock`
+- `lib/data/database/local_database.dart`
+- `lib/data/database/database_bootstrap.dart`
+- `lib/data/models/account_model.dart`
+- `lib/data/models/tracked_card_model.dart`
+- `lib/data/models/obligation_model.dart`
+- `lib/data/models/payment_event_model.dart`
+- `lib/data/models/audit_entry_model.dart`
+- `lib/data/repositories/local_account_repository.dart`
+- `lib/data/repositories/local_card_repository.dart`
+- `lib/data/repositories/local_obligation_repository.dart`
+- `lib/data/repositories/local_payment_event_repository.dart`
+- `lib/data/repositories/local_audit_repository.dart`
+- `lib/app/state/kinjuu_app_controller.dart`
+- `test/app/state/kinjuu_app_controller_test.dart`
+- `PASSCHANGELOG.md`
+
+### Decisions made
+- Adopted a narrow SQLite integration using `sqflite` with `sqflite_common_ffi` for desktop/test environments rather than introducing a new persistence architecture.
+- Kept the existing schema contract and selective `time.loc` boundary unchanged: audit-bearing app records only, not ordinary UI models.
+- Left subscriptions and notification rules on the deferred in-memory path because they are not part of the currently implemented MVP interaction loop.
+
+### Explicitly not done
+- No budgeting, bank connectivity, cloud sync, payment processing, premium/connect work, or new product surfaces.
+- No schema expansion beyond the existing MVP tables.
+- No device-notification delivery integration or persistence wiring for deferred non-core repositories.
+
+### Open issues
+- `subscriptions` and `notification_rules` still use the deferred in-memory repository backing because they are not active in the current MVP path.
+- The local notification service still plans reminders but does not yet schedule them on-device.
+
+### Handoff notes
+- Core created and updated data now survives app restart/reload through the local SQLite-backed repository path.
+- The next pass can stay focused on UX or deferred persistence work rather than revisiting the core CRUD durability path.
