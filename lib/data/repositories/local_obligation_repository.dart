@@ -9,37 +9,86 @@ class LocalObligationRepository extends LocalRepositoryBase
 
   @override
   Future<void> archive(String id) async {
-    // TODO(pass-0003): Implement archive persistence once concrete SQLite access is wired.
-    throw UnimplementedError();
+    final existing = LocalRepositoryBase.store.obligations[id];
+    if (existing == null) {
+      return;
+    }
+
+    LocalRepositoryBase.store.obligations[id] = Obligation(
+      id: existing.id,
+      title: existing.title,
+      obligationType: existing.obligationType,
+      sourceType: existing.sourceType,
+      linkedAccountId: existing.linkedAccountId,
+      linkedCardId: existing.linkedCardId,
+      expectedAmount: existing.expectedAmount,
+      minimumAmount: existing.minimumAmount,
+      currencyCode: existing.currencyCode,
+      dueDate: existing.dueDate,
+      statementDate: existing.statementDate,
+      recurrenceRule: existing.recurrenceRule,
+      status: ObligationStatus.archived,
+      autopayExpected: existing.autopayExpected,
+      category: existing.category,
+      notes: existing.notes,
+      createdAt: existing.createdAt,
+      updatedAt: DateTime.now(),
+    );
   }
 
   @override
   Future<List<Obligation>> getAll() async {
-    // TODO(pass-0003): Query all obligations from local storage.
-    throw UnimplementedError();
+    final items =
+        LocalRepositoryBase.store.obligations.values.toList(growable: false);
+    items.sort((left, right) => left.dueDate.compareTo(right.dueDate));
+    return items;
   }
 
   @override
   Future<Obligation?> getById(String id) async {
-    // TODO(pass-0003): Query a single obligation by id.
-    throw UnimplementedError();
+    return LocalRepositoryBase.store.obligations[id];
   }
 
   @override
   Future<List<Obligation>> getUpcoming() async {
-    // TODO(pass-0003): Query upcoming obligations after status derivation is defined.
-    throw UnimplementedError();
+    final items = LocalRepositoryBase.store.obligations.values
+        .where((entry) => entry.status != ObligationStatus.archived)
+        .toList(growable: false);
+    items.sort((left, right) => left.dueDate.compareTo(right.dueDate));
+    return items;
   }
 
   @override
   Future<void> save(Obligation obligation) async {
-    // TODO(pass-0003): Insert or update a local obligation.
-    throw UnimplementedError();
+    LocalRepositoryBase.store.obligations[obligation.id] = obligation;
   }
 
   @override
   Future<void> updateStatus(String id, ObligationStatus status) async {
-    // TODO(pass-0003): Persist status changes using the constrained obligation statuses.
-    throw UnimplementedError();
+    final existing = LocalRepositoryBase.store.obligations[id];
+    if (existing == null) {
+      return;
+    }
+
+    LocalRepositoryBase.store.obligations[id] = Obligation(
+      id: existing.id,
+      title: existing.title,
+      obligationType: existing.obligationType,
+      sourceType: existing.sourceType,
+      linkedAccountId: existing.linkedAccountId,
+      linkedCardId: existing.linkedCardId,
+      expectedAmount: existing.expectedAmount,
+      minimumAmount: existing.minimumAmount,
+      currencyCode: existing.currencyCode,
+      dueDate: existing.dueDate,
+      statementDate: existing.statementDate,
+      recurrenceRule: existing.recurrenceRule,
+      status: status,
+      autopayExpected: existing.autopayExpected,
+      category: existing.category,
+      notes: existing.notes,
+      createdAt: existing.createdAt,
+      updatedAt: DateTime.now(),
+    );
   }
 }

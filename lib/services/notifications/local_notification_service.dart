@@ -116,12 +116,14 @@ class LocalNotificationService implements NotificationService {
 
   @override
   Future<void> cancelByTarget(String targetId) async {
-    // TODO(pass-0004): Bridge target-based cancelation to the platform notification plugin.
+    // TODO(scaffold-debt): Bridge target-based cancellation to a local device
+    // notification plugin once platform scheduling is intentionally in scope.
   }
 
   @override
   Future<void> schedulePlan(List<ReminderPlanEntry> entries) async {
-    // TODO(pass-0004): Bridge reminder plan entries to the platform notification plugin.
+    // TODO(scaffold-debt): Bridge reminder plan entries to a local device
+    // notification plugin once platform scheduling is intentionally in scope.
   }
 
   QuietHoursWindow? _parseQuietHours(NotificationRule rule) {
@@ -137,12 +139,30 @@ class LocalNotificationService implements NotificationService {
       return null;
     }
 
+    final startHour = int.tryParse(startParts[0]);
+    final startMinute = int.tryParse(startParts[1]);
+    final endHour = int.tryParse(endParts[0]);
+    final endMinute = int.tryParse(endParts[1]);
+
+    if (!_isValidHourMinute(startHour, startMinute) ||
+        !_isValidHourMinute(endHour, endMinute)) {
+      return null;
+    }
+
     return QuietHoursWindow(
-      startHour: int.parse(startParts[0]),
-      startMinute: int.parse(startParts[1]),
-      endHour: int.parse(endParts[0]),
-      endMinute: int.parse(endParts[1]),
+      startHour: startHour!,
+      startMinute: startMinute!,
+      endHour: endHour!,
+      endMinute: endMinute!,
     );
+  }
+
+  bool _isValidHourMinute(int? hour, int? minute) {
+    if (hour == null || minute == null) {
+      return false;
+    }
+
+    return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
   }
 
   DateTime _applyQuietHours(DateTime scheduledFor, QuietHoursWindow? quietHours) {
@@ -165,4 +185,3 @@ class LocalNotificationService implements NotificationService {
     return adjusted.add(const Duration(days: 1));
   }
 }
-

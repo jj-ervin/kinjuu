@@ -12,16 +12,17 @@ class LocalDatabase {
       ];
 
   Future<void> open() async {
-    // TODO(pass-0003): Connect this scaffold to a concrete SQLite package.
+    // TODO(scaffold-debt): Replace this no-op with a concrete SQLite adapter
+    // when persistence work resumes beyond the current in-memory MVP loop.
   }
 
   Future<void> close() async {
-    // TODO(pass-0003): Close the concrete SQLite connection when implemented.
+    // TODO(scaffold-debt): Close the concrete SQLite adapter once one is wired.
   }
 
   Future<void> execute(String sql, [List<Object?> parameters = const []]) async {
     throw UnimplementedError(
-      'SQLite execution is intentionally deferred after PASS 0003 schema scaffolding.',
+      'Scaffold debt: LocalDatabase.execute is intentionally not wired because the active MVP flow currently uses in-memory repositories.',
     );
   }
 
@@ -30,13 +31,13 @@ class LocalDatabase {
     List<Object?> parameters = const [],
   ]) async {
     throw UnimplementedError(
-      'SQLite querying is intentionally deferred after PASS 0003 schema scaffolding.',
+      'Scaffold debt: LocalDatabase.query is intentionally not wired because the active MVP flow currently uses in-memory repositories.',
     );
   }
 
   Future<void> insert(String table, Map<String, Object?> values) async {
     throw UnimplementedError(
-      'Insert operations are intentionally deferred after PASS 0003.',
+      'Scaffold debt: LocalDatabase.insert is intentionally not wired because the active MVP flow currently uses in-memory repositories.',
     );
   }
 
@@ -47,7 +48,7 @@ class LocalDatabase {
     List<Object?> whereArgs = const [],
   }) async {
     throw UnimplementedError(
-      'Update operations are intentionally deferred after PASS 0003.',
+      'Scaffold debt: LocalDatabase.update is intentionally not wired because the active MVP flow currently uses in-memory repositories.',
     );
   }
 
@@ -57,8 +58,7 @@ class LocalDatabase {
     List<Object?> whereArgs = const [],
   }) async {
     throw UnimplementedError(
-      'Delete operations are intentionally deferred after PASS 0003.',
+      'Scaffold debt: LocalDatabase.delete is intentionally not wired because the active MVP flow currently uses in-memory repositories.',
     );
   }
 }
-

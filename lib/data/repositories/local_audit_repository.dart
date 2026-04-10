@@ -7,13 +7,13 @@ class LocalAuditRepository extends LocalRepositoryBase implements AuditRepositor
 
   @override
   Future<List<AuditEntry>> getRecent({int limit = 50}) async {
-    // TODO(pass-0003): Query recent audit entries in descending timestamp order.
-    throw UnimplementedError();
+    final items = LocalRepositoryBase.store.auditEntries.values.toList();
+    items.sort((left, right) => right.createdAt.compareTo(left.createdAt));
+    return items.take(limit).toList(growable: false);
   }
 
   @override
   Future<void> save(AuditEntry entry) async {
-    // TODO(pass-0003): Insert an audit entry into local storage.
-    throw UnimplementedError();
+    LocalRepositoryBase.store.auditEntries[entry.id] = entry;
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinjuu/domain/entities/notification_rule.dart';
 import 'package:kinjuu/domain/entities/obligation.dart';
+import 'package:kinjuu/domain/enums/notification_target_type.dart';
 import 'package:kinjuu/domain/enums/obligation_status.dart';
 import 'package:kinjuu/domain/enums/obligation_type.dart';
 import 'package:kinjuu/domain/enums/recurrence_rule_style.dart';
@@ -53,6 +55,51 @@ void main() {
       expect(service.deriveStatus(overdue, now: now), ObligationStatus.overdue);
     });
 
+    test('pending status becomes overdue after due date passes', () {
+      final service = ObligationStatusServiceImpl();
+      final now = DateTime(2026, 4, 10, 8);
+
+      final pending = _buildObligation(
+        dueDate: DateTime(2026, 4, 9),
+        status: ObligationStatus.pending,
+      );
+
+      expect(service.deriveStatus(pending, now: now), ObligationStatus.overdue);
+    });
+
+    test('invalid quiet hours do not crash reminder planning', () {
+      final service = LocalNotificationService();
+      final obligation = _buildObligation(dueDate: DateTime(2026, 4, 20));
+      final now = DateTime(2026, 4, 10, 12);
+      final rules = [
+        NotificationRule(
+          id: 'bad-hours',
+          targetType: NotificationTargetType.obligation,
+          targetId: obligation.id,
+          daysBefore: 3,
+          triggerOnDueDate: false,
+          triggerIfOverdue: false,
+          overdueIntervalDays: null,
+          isEnabled: true,
+          quietHoursStart: '25:61',
+          quietHoursEnd: '08:99',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ];
+
+      final entries = service.buildPlanForObligation(
+        obligation: obligation,
+        rules: rules,
+        notificationTitle: 'Bill',
+        notificationBody: 'Body',
+        now: now,
+      );
+
+      expect(entries, hasLength(1));
+      expect(entries.single.quietHours, isNull);
+    });
+
     test('recurrence service calculates monthly follow-up date', () {
       final service = RecurrenceServiceImpl();
 
@@ -67,7 +114,10 @@ void main() {
   });
 }
 
-Obligation _buildObligation({required DateTime dueDate}) {
+Obligation _buildObligation({
+  required DateTime dueDate,
+  ObligationStatus status = ObligationStatus.upcoming,
+}) {
   return Obligation(
     id: 'obl-1',
     title: 'Electric bill',
@@ -81,7 +131,7 @@ Obligation _buildObligation({required DateTime dueDate}) {
     dueDate: dueDate,
     statementDate: null,
     recurrenceRule: RecurrenceRuleStyle.monthly,
-    status: ObligationStatus.upcoming,
+    status: status,
     autopayExpected: false,
     category: 'Utilities',
     notes: '',

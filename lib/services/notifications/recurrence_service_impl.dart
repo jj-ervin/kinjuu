@@ -71,7 +71,8 @@ class RecurrenceServiceImpl implements RecurrenceService {
       case RecurrenceRuleStyle.yearly:
         return _addMonths(current, 12);
       case RecurrenceRuleStyle.custom:
-        // TODO(pass-0004): Support persisted custom recurrence rules after schema expansion.
+        // TODO(scaffold-debt): Support persisted custom recurrence rules only if
+        // the MVP later adopts a concrete custom recurrence storage format.
         return null;
     }
   }

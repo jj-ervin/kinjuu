@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../state/obligation_editor_args.dart';
 import '../../features/accounts_cards/presentation/accounts_cards_screen.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
@@ -17,8 +18,11 @@ abstract final class AppRouter {
       case AppRoutes.obligations:
         return _page(const ObligationsListScreen(), settings);
       case AppRoutes.obligationEditor:
-        final title = settings.arguments as String?;
-        return _page(AddEditObligationScreen(titleOverride: title), settings);
+        final args = settings.arguments as ObligationEditorArgs?;
+        return _page(
+          AddEditObligationScreen(obligationId: args?.obligationId),
+          settings,
+        );
       case AppRoutes.accountsCards:
         return _page(const AccountsCardsScreen(), settings);
       case AppRoutes.calendar:

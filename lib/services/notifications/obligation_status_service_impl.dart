@@ -24,6 +24,9 @@ class ObligationStatusServiceImpl implements ObligationStatusService {
       return ObligationStatus.paid;
     }
     if (obligation.status == ObligationStatus.pending) {
+      if (dueDate.isBefore(today)) {
+        return ObligationStatus.overdue;
+      }
       return ObligationStatus.pending;
     }
     if (dueDate.isAtSameMomentAs(today)) {
@@ -68,4 +71,3 @@ class ObligationStatusServiceImpl implements ObligationStatusService {
     return derived.map((entry) => entry.obligation).toList(growable: false);
   }
 }
-

@@ -8,26 +8,38 @@ class LocalAccountRepository extends LocalRepositoryBase
 
   @override
   Future<void> archive(String id) async {
-    // TODO(pass-0003): Implement archive persistence once concrete SQLite access is wired.
-    throw UnimplementedError();
+    final existing = LocalRepositoryBase.store.accounts[id];
+    if (existing == null) {
+      return;
+    }
+
+    LocalRepositoryBase.store.accounts[id] = Account(
+      id: existing.id,
+      name: existing.name,
+      institutionName: existing.institutionName,
+      accountType: existing.accountType,
+      maskedReference: existing.maskedReference,
+      notes: existing.notes,
+      isArchived: true,
+      createdAt: existing.createdAt,
+      updatedAt: DateTime.now(),
+    );
   }
 
   @override
   Future<List<Account>> getAll() async {
-    // TODO(pass-0003): Query local SQLite-backed accounts.
-    throw UnimplementedError();
+    final items = LocalRepositoryBase.store.accounts.values.toList(growable: false);
+    items.sort((left, right) => right.updatedAt.compareTo(left.updatedAt));
+    return items;
   }
 
   @override
   Future<Account?> getById(String id) async {
-    // TODO(pass-0003): Query a single account by id.
-    throw UnimplementedError();
+    return LocalRepositoryBase.store.accounts[id];
   }
 
   @override
   Future<void> save(Account account) async {
-    // TODO(pass-0003): Insert or update a local account.
-    throw UnimplementedError();
+    LocalRepositoryBase.store.accounts[account.id] = account;
   }
 }
-

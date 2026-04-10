@@ -9,25 +9,43 @@ class LocalSubscriptionRepository extends LocalRepositoryBase
 
   @override
   Future<List<Subscription>> getAll() async {
-    // TODO(pass-0003): Query all subscriptions from local storage.
-    throw UnimplementedError();
+    final items =
+        LocalRepositoryBase.store.subscriptions.values.toList(growable: false);
+    items.sort((left, right) => right.updatedAt.compareTo(left.updatedAt));
+    return items;
   }
 
   @override
   Future<Subscription?> getById(String id) async {
-    // TODO(pass-0003): Query a single subscription by id.
-    throw UnimplementedError();
+    return LocalRepositoryBase.store.subscriptions[id];
   }
 
   @override
   Future<void> save(Subscription subscription) async {
-    // TODO(pass-0003): Insert or update a local subscription.
-    throw UnimplementedError();
+    LocalRepositoryBase.store.subscriptions[subscription.id] = subscription;
   }
 
   @override
   Future<void> updateStatus(String id, ObligationStatus status) async {
-    // TODO(pass-0003): Persist subscription status changes.
-    throw UnimplementedError();
+    final existing = LocalRepositoryBase.store.subscriptions[id];
+    if (existing == null) {
+      return;
+    }
+
+    LocalRepositoryBase.store.subscriptions[id] = Subscription(
+      id: existing.id,
+      title: existing.title,
+      providerName: existing.providerName,
+      sourceType: existing.sourceType,
+      billingCycle: existing.billingCycle,
+      expectedAmount: existing.expectedAmount,
+      renewalDate: existing.renewalDate,
+      linkedAccountId: existing.linkedAccountId,
+      linkedCardId: existing.linkedCardId,
+      status: status,
+      notes: existing.notes,
+      createdAt: existing.createdAt,
+      updatedAt: DateTime.now(),
+    );
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/routes/app_routes.dart';
-import '../../../shared/widgets/feature_placeholder_card.dart';
+import '../../../app/state/kinjuu_app_scope.dart';
+import '../../../services/notifications/obligation_status_service_impl.dart';
 import '../../../shared/widgets/kinjuu_app_scaffold.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -9,6 +10,9 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = KinjuuAppScope.of(context);
+    final statusService = ObligationStatusServiceImpl();
+
     return KinjuuAppScaffold(
       currentRoute: AppRoutes.dashboard,
       title: 'Dashboard',
@@ -23,20 +27,46 @@ class DashboardScreen extends StatelessWidget {
       ],
       child: ListView(
         children: [
-          FeaturePlaceholderCard(
-            title: 'Due soon',
-            description:
-                'Dashboard summary cards and upcoming obligation snapshots land here in a later pass.',
-            icon: Icons.schedule_outlined,
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _SummaryCard(label: 'Due today', value: controller.dueTodayCount),
+              _SummaryCard(label: 'Overdue', value: controller.overdueCount),
+              _SummaryCard(label: 'Upcoming', value: controller.upcomingCount),
+            ],
           ),
-          const SizedBox(height: 12),
-          FeaturePlaceholderCard(
-            title: 'Quick navigation',
-            description:
-                'Use the drawer to move between the required MVP sections while the scaffold is still placeholder-based.',
-            icon: Icons.dashboard_customize_outlined,
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Next obligations',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  if (controller.dashboardObligations.isEmpty)
+                    const Text('No obligations created yet.')
+                  else
+                    for (final obligation in controller.dashboardObligations) ...[
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(obligation.title),
+                        subtitle: Text(
+                          '${_formatDate(obligation.dueDate)} • ${_labelForStatus(statusService.deriveStatus(obligation))}',
+                        ),
+                      ),
+                      if (obligation != controller.dashboardObligations.last)
+                        const Divider(),
+                    ],
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -52,18 +82,60 @@ class DashboardScreen extends StatelessWidget {
                 routeName: AppRoutes.accountsCards,
               ),
               _QuickLink(
-                label: 'Calendar',
-                icon: Icons.calendar_month_outlined,
-                routeName: AppRoutes.calendar,
-              ),
-              _QuickLink(
                 label: 'History',
                 icon: Icons.history_outlined,
                 routeName: AppRoutes.history,
               ),
+              _QuickLink(
+                label: 'Calendar',
+                icon: Icons.calendar_month_outlined,
+                routeName: AppRoutes.calendar,
+              ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  String _labelForStatus(Enum status) =>
+      status.name.replaceAll('_', ' ').replaceFirstMapped(
+            RegExp(r'^[a-z]'),
+            (match) => match.group(0)!.toUpperCase(),
+          );
+}
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({required this.label, required this.value});
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 160,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label),
+              const SizedBox(height: 8),
+              Text(
+                '$value',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -92,4 +164,3 @@ class _QuickLink extends StatelessWidget {
     );
   }
 }
-

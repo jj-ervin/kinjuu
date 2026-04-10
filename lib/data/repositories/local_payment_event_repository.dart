@@ -8,14 +8,15 @@ class LocalPaymentEventRepository extends LocalRepositoryBase
 
   @override
   Future<List<PaymentEvent>> getByObligationId(String obligationId) async {
-    // TODO(pass-0003): Query payment events for a given obligation.
-    throw UnimplementedError();
+    final items = LocalRepositoryBase.store.paymentEvents.values
+        .where((entry) => entry.obligationId == obligationId)
+        .toList(growable: false);
+    items.sort((left, right) => right.createdAt.compareTo(left.createdAt));
+    return items;
   }
 
   @override
   Future<void> save(PaymentEvent event) async {
-    // TODO(pass-0003): Insert a payment event into local storage.
-    throw UnimplementedError();
+    LocalRepositoryBase.store.paymentEvents[event.id] = event;
   }
 }
-

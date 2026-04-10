@@ -7,26 +7,40 @@ class LocalCardRepository extends LocalRepositoryBase implements CardRepository 
 
   @override
   Future<void> archive(String id) async {
-    // TODO(pass-0003): Implement archive persistence once concrete SQLite access is wired.
-    throw UnimplementedError();
+    final existing = LocalRepositoryBase.store.cards[id];
+    if (existing == null) {
+      return;
+    }
+
+    LocalRepositoryBase.store.cards[id] = TrackedCard(
+      id: existing.id,
+      name: existing.name,
+      issuer: existing.issuer,
+      cardType: existing.cardType,
+      maskedReference: existing.maskedReference,
+      statementDay: existing.statementDay,
+      dueDay: existing.dueDay,
+      notes: existing.notes,
+      isArchived: true,
+      createdAt: existing.createdAt,
+      updatedAt: DateTime.now(),
+    );
   }
 
   @override
   Future<List<TrackedCard>> getAll() async {
-    // TODO(pass-0003): Query local SQLite-backed cards.
-    throw UnimplementedError();
+    final items = LocalRepositoryBase.store.cards.values.toList(growable: false);
+    items.sort((left, right) => right.updatedAt.compareTo(left.updatedAt));
+    return items;
   }
 
   @override
   Future<TrackedCard?> getById(String id) async {
-    // TODO(pass-0003): Query a single card by id.
-    throw UnimplementedError();
+    return LocalRepositoryBase.store.cards[id];
   }
 
   @override
   Future<void> save(TrackedCard card) async {
-    // TODO(pass-0003): Insert or update a local card.
-    throw UnimplementedError();
+    LocalRepositoryBase.store.cards[card.id] = card;
   }
 }
-
