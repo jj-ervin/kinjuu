@@ -202,3 +202,70 @@ Agent/Model: Codex (GPT-5-based)
 ### Handoff notes
 - Required tables are scaffolded as `accounts`, `cards`, `obligations`, `subscriptions`, `payment_events`, `notification_rules`, and `audit_entries`.
 - `TrackedCard` was used as the Dart entity name to avoid UI/widget naming collisions while still representing the required `card` entity cleanly.
+
+## PASS 0004 — Reminder and Status Foundation
+
+### time.loc
+version: 1
+stamp.local: 2026-04-10T14:59:33-07:00
+stamp.local.day: 2026-04-10
+stamp.utc: 2026-04-10T21:59:34Z
+stamp.utc.day: 2026-04-10
+geo.city:
+geo.region:
+geo.country: USA
+geo.source: environment_estimate
+seq: pass-0004-log-1
+sig: unavailable
+geo.lat:
+geo.lon:
+geo.alt:
+
+Date: 2026-04-10
+Agent/Model: Codex (GPT-5-based)
+
+### Completed
+- Added a local-first notification abstraction, reminder planning value types, and default reminder schedule support for 7/3/1 days before, due date, and overdue reminders.
+- Added recurrence and obligation-status service contracts plus local implementations for upcoming/due-today/overdue derivation and recurring date generation.
+- Verified the pass with `flutter analyze` and `flutter test`.
+
+### Files created/updated
+- `HANDSHAKE_PASS_0004.md`
+- `lib/domain/enums/reminder_event_type.dart`
+- `lib/domain/entities/quiet_hours_window.dart`
+- `lib/domain/entities/reminder_plan_entry.dart`
+- `lib/domain/services/notification_service.dart`
+- `lib/domain/services/obligation_status_service.dart`
+- `lib/domain/services/recurrence_service.dart`
+- `lib/services/notifications/notification_defaults.dart`
+- `lib/services/notifications/local_notification_service.dart`
+- `lib/services/notifications/obligation_status_service_impl.dart`
+- `lib/services/notifications/recurrence_service_impl.dart`
+- `test/services/notifications/notification_foundation_test.dart`
+- `lib/app/theme/app_theme.dart`
+- `lib/data/repositories/local_audit_repository.dart`
+- `lib/data/repositories/local_card_repository.dart`
+- `lib/data/repositories/local_notification_rule_repository.dart`
+- `lib/data/repositories/local_obligation_repository.dart`
+- `lib/data/repositories/local_payment_event_repository.dart`
+- `lib/data/repositories/local_subscription_repository.dart`
+- `PASSCHANGELOG.md`
+
+### Decisions made
+- Kept notification work package-agnostic by building reminder plans in Dart and deferring the actual plugin bridge to TODOs in the local notification service.
+- Represented quiet hours as a typed window value object and applied it only during reminder schedule planning.
+- Preserved manual-only, local-first MVP scope by limiting this pass to planning, derivation, and service abstractions rather than delivery infrastructure.
+
+### Explicitly not done
+- No platform notification plugin integration or actual device scheduling behavior.
+- No cloud messaging, connected sync triggers, budgeting logic, payment actions, or non-MVP analytics work.
+- No expansion of `time.loc` beyond the existing selective audit-bearing boundary.
+
+### Open issues
+- The local notification service still needs a concrete package adapter in a later pass.
+- Custom recurrence rules remain intentionally deferred.
+- PASS 0005 still needs to connect CRUD/activity flows to these status and reminder foundations.
+
+### Handoff notes
+- Default reminder rule support now exists in code for 7, 3, and 1 days before due date, plus due-date and overdue reminders.
+- Status derivation preserves `paid`, `pending`, and `archived`, and derives `due_today`, `overdue`, and `upcoming` from due dates for the remaining cases.

@@ -1,7 +1,6 @@
 import '../../domain/entities/obligation.dart';
 import '../../domain/enums/obligation_status.dart';
 import '../../domain/repositories/obligation_repository.dart';
-import '../database/local_database.dart';
 import 'local_repository_base.dart';
 
 class LocalObligationRepository extends LocalRepositoryBase

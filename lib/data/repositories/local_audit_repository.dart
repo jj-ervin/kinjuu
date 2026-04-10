@@ -1,6 +1,5 @@
 import '../../domain/entities/audit_entry.dart';
 import '../../domain/repositories/audit_repository.dart';
-import '../database/local_database.dart';
 import 'local_repository_base.dart';
 
 class LocalAuditRepository extends LocalRepositoryBase implements AuditRepository {

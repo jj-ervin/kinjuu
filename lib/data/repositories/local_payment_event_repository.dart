@@ -1,6 +1,5 @@
 import '../../domain/entities/payment_event.dart';
 import '../../domain/repositories/payment_event_repository.dart';
-import '../database/local_database.dart';
 import 'local_repository_base.dart';
 
 class LocalPaymentEventRepository extends LocalRepositoryBase
@@ -19,4 +18,3 @@ class LocalPaymentEventRepository extends LocalRepositoryBase
     throw UnimplementedError();
   }
 }
-

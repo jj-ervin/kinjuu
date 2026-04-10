@@ -1,6 +1,5 @@
 import '../../domain/entities/notification_rule.dart';
 import '../../domain/repositories/notification_rule_repository.dart';
-import '../database/local_database.dart';
 import 'local_repository_base.dart';
 
 class LocalNotificationRuleRepository extends LocalRepositoryBase
@@ -31,4 +30,3 @@ class LocalNotificationRuleRepository extends LocalRepositoryBase
     throw UnimplementedError();
   }
 }
-

@@ -1,7 +1,6 @@
 import '../../domain/entities/subscription.dart';
 import '../../domain/enums/obligation_status.dart';
 import '../../domain/repositories/subscription_repository.dart';
-import '../database/local_database.dart';
 import 'local_repository_base.dart';
 
 class LocalSubscriptionRepository extends LocalRepositoryBase

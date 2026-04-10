@@ -1,6 +1,5 @@
 import '../../domain/entities/tracked_card.dart';
 import '../../domain/repositories/card_repository.dart';
-import '../database/local_database.dart';
 import 'local_repository_base.dart';
 
 class LocalCardRepository extends LocalRepositoryBase implements CardRepository {
@@ -30,4 +29,3 @@ class LocalCardRepository extends LocalRepositoryBase implements CardRepository 
     throw UnimplementedError();
   }
 }
-
