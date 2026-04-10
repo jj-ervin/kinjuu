@@ -6,7 +6,7 @@ import 'local_repository_base.dart';
 
 class LocalSubscriptionRepository extends LocalRepositoryBase
     implements SubscriptionRepository {
-  LocalSubscriptionRepository(LocalDatabase database) : super(database);
+  LocalSubscriptionRepository(super.database);
 
   @override
   Future<List<Subscription>> getAll() async {

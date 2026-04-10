@@ -5,7 +5,7 @@ import 'local_repository_base.dart';
 
 class LocalNotificationRuleRepository extends LocalRepositoryBase
     implements NotificationRuleRepository {
-  LocalNotificationRuleRepository(LocalDatabase database) : super(database);
+  LocalNotificationRuleRepository(super.database);
 
   @override
   Future<void> delete(String id) async {

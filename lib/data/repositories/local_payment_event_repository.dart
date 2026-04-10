@@ -5,7 +5,7 @@ import 'local_repository_base.dart';
 
 class LocalPaymentEventRepository extends LocalRepositoryBase
     implements PaymentEventRepository {
-  LocalPaymentEventRepository(LocalDatabase database) : super(database);
+  LocalPaymentEventRepository(super.database);
 
   @override
   Future<List<PaymentEvent>> getByObligationId(String obligationId) async {

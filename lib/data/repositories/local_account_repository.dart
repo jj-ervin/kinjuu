@@ -1,11 +1,10 @@
 import '../../domain/entities/account.dart';
 import '../../domain/repositories/account_repository.dart';
-import '../database/local_database.dart';
 import 'local_repository_base.dart';
 
 class LocalAccountRepository extends LocalRepositoryBase
     implements AccountRepository {
-  LocalAccountRepository(LocalDatabase database) : super(database);
+  LocalAccountRepository(super.database);
 
   @override
   Future<void> archive(String id) async {

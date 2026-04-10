@@ -6,7 +6,7 @@ import 'local_repository_base.dart';
 
 class LocalObligationRepository extends LocalRepositoryBase
     implements ObligationRepository {
-  LocalObligationRepository(LocalDatabase database) : super(database);
+  LocalObligationRepository(super.database);
 
   @override
   Future<void> archive(String id) async {

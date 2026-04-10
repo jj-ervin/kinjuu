@@ -4,7 +4,7 @@ import '../database/local_database.dart';
 import 'local_repository_base.dart';
 
 class LocalCardRepository extends LocalRepositoryBase implements CardRepository {
-  LocalCardRepository(LocalDatabase database) : super(database);
+  LocalCardRepository(super.database);
 
   @override
   Future<void> archive(String id) async {
