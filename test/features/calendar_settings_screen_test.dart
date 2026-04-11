@@ -35,7 +35,6 @@ void main() {
     testWidgets('calendar screen shows persisted obligation sections',
         (tester) async {
       // TODO: Fix hang in widget tree during pumpWidget
-      return;
       await controller.saveObligation(
         title: 'Rent',
         obligationType: ObligationType.bill,
@@ -62,12 +61,11 @@ void main() {
       expect(find.text('Next 7 days'), findsOneWidget);
       expect(find.text('Rent'), findsOneWidget);
       expect(find.text('Upcoming consistency'), findsOneWidget);
-    });
+    }, skip: true);
 
     testWidgets('settings screen shows persisted reminder defaults',
         (tester) async {
       // TODO: Fix hang in widget tree during pumpWidget
-      return;
       await tester.pumpWidget(
         MaterialApp(
           home: KinjuuAppScope(
@@ -82,7 +80,7 @@ void main() {
       expect(find.text('7 days before'), findsOneWidget);
       expect(find.text('Save settings'), findsOneWidget);
       expect(find.text('Current behavior'), findsOneWidget);
-    });
+    }, skip: true);
   });
 }
 

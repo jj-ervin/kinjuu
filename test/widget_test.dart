@@ -14,9 +14,9 @@ import 'package:kinjuu/domain/services/notification_service.dart';
 import 'package:kinjuu/services/notifications/local_notification_service.dart';
 
 void main() {
-  testWidgets('Kinjuu app boots to dashboard scaffold', (tester) async {
+  testWidgets('Kinjuu app boots to dashboard scaffold',
+      (tester) async {
     // TODO: Fix hang in widget tree during pumpWidget
-    return;
     final database = LocalDatabase(databaseName: 'kinjuu_widget_boot_test.db');
     await database.reset();
     LocalRepositoryBase.store.clear();
@@ -32,7 +32,7 @@ void main() {
     expect(find.text('Dashboard'), findsOneWidget);
     expect(find.text(AppStrings.appTagline), findsOneWidget);
     expect(find.byType(MaterialApp), findsOneWidget);
-  });
+  }, skip: true);
 }
 
 class _BootTestNotificationService implements NotificationService {

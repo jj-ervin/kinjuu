@@ -20,10 +20,14 @@ Each PASS (Programming Across Scope and Structure) is a scoped work unit with:
 
 1. **Create a task branch**: `pass-NNNN-{title}`
 2. **Work within scope**: Implement, test, verify
-3. **Write HANDOFF document**: Document what you completed, changed, and what remains
-4. **Update PASSCHANGELOG**: Add entry with required sections (see below)
-5. **Submit for handshake**: Next pass reads HANDOFF and PASSCHANGELOG, confirms scope in HANDSHAKE
-6. **Merge to main**: After handshake confirmation
+3. **Ensure code quality**:
+   - Run `flutter analyze` and fix all violations (zero violations required)
+   - Run `dart format` on all modified files
+   - Run `flutter test` and ensure all tests pass
+4. **Write HANDOFF document**: Document what you completed, changed, and what remains
+5. **Update PASSCHANGELOG**: Add entry with required sections (see below)
+6. **Submit for handshake**: Next pass reads HANDOFF and PASSCHANGELOG, confirms scope in HANDSHAKE
+7. **Merge to main**: After handshake confirmation
 
 ### Required Sections in Every PASS Document
 
@@ -94,8 +98,9 @@ A transparent, auditable explanation of the cognitive chain:
 
 ### Code Style
 - Follow Flutter and Dart conventions (see `analysis_options.yaml`)
-- Run `flutter analyze` before committing
-- Format with `dart format`
+- **REQUIRED**: Run `flutter analyze` and fix all violations before submitting any code — zero violations are required
+- **REQUIRED**: Run `dart format` on all modified Dart files
+- Do not submit code with lint warnings, errors, or violations of any kind
 
 ### Testing
 - Write tests for new features and bug fixes
