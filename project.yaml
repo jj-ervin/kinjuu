@@ -4,3 +4,4 @@ project:
   scaffold: stub
   version: 0.1.0
   governance_mode: stub  # Change to 'full' once all rules are [IMPLEMENTED]
+  eco_version: v1.0.1   # Pinned to this .eco release — use tools/update_governance.py to upgrade
