@@ -100,7 +100,8 @@ A transparent, auditable explanation of the cognitive chain:
 - Follow Flutter and Dart conventions (see `analysis_options.yaml`)
 - **REQUIRED**: Run `flutter analyze` and fix all violations before submitting any code — zero violations are required
 - **REQUIRED**: Run `dart format` on all modified Dart files
-- Do not submit code with lint warnings, errors, or violations of any kind
+- **REQUIRED**: Run `npx markdownlint "docs/**/*.md" "*.md"` and fix all violations — zero violations are required
+- Do not submit code or documentation with lint warnings, errors, or violations of any kind
 
 ### Testing
 - Write tests for new features and bug fixes
