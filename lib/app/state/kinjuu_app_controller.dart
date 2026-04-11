@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../core/utils/time_loc_factory.dart';
 import '../../data/database/local_database.dart';
+import '../../data/database/in_memory_local_store.dart';
+import '../../data/repositories/in_memory_repositories.dart';
 import '../../data/repositories/local_account_repository.dart';
 import '../../data/repositories/local_audit_repository.dart';
 import '../../data/repositories/local_card_repository.dart';
@@ -62,6 +64,25 @@ class KinjuuAppController extends ChangeNotifier {
             notificationService ?? LocalNotificationService(),
         _obligationStatusService =
             obligationStatusService ?? ObligationStatusServiceImpl();
+
+  factory KinjuuAppController.inMemory({
+    InMemoryLocalStore? store,
+    NotificationService? notificationService,
+    ObligationStatusServiceImpl? obligationStatusService,
+  }) {
+    final inMemoryStore = store ?? InMemoryLocalStore();
+    return KinjuuAppController(
+      accountRepository: InMemoryAccountRepository(inMemoryStore),
+      cardRepository: InMemoryCardRepository(inMemoryStore),
+      obligationRepository: InMemoryObligationRepository(inMemoryStore),
+      paymentEventRepository: InMemoryPaymentEventRepository(inMemoryStore),
+      notificationRuleRepository:
+          InMemoryNotificationRuleRepository(inMemoryStore),
+      auditRepository: InMemoryAuditRepository(inMemoryStore),
+      notificationService: notificationService,
+      obligationStatusService: obligationStatusService,
+    );
+  }
 
   final AccountRepository _accountRepository;
   final CardRepository _cardRepository;

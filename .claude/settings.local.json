@@ -25,7 +25,18 @@
       "Bash(mkdir -p logs)",
       "Bash(mv flutter_*.log logs/)",
       "Bash(echo \"logs/\")",
-      "Bash(echo \"build/\")"
+      "Bash(echo \"build/\")",
+      "Bash(flutter analyze:*)",
+      "Bash(tee analyze_output.txt)",
+      "Bash(find docs:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(npm list:*)",
+      "Bash(npm install:*)",
+      "Bash(markdownlint \"docs/PASS/PASSCHANGELOG.md\")",
+      "Bash(npx markdownlint:*)",
+      "Bash(git commit:*)",
+      "Bash(grep -v \"//\")"
     ]
   }
 }
