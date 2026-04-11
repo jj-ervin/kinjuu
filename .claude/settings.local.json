@@ -11,7 +11,13 @@
       "Read(//c/dev//**)",
       "Bash(/c/dev/tools/flutter/bin/flutter test:*)",
       "Bash(git branch:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(rm -rf build .dart_tool)",
+      "Bash(flutter clean:*)",
+      "Bash(taskkill /F /IM dart.exe)",
+      "Bash(rm -rf build)",
+      "Bash(rm -rf .dart_tool/sqflite_common_ffi)",
+      "Bash(wmic process:*)"
     ]
   }
 }

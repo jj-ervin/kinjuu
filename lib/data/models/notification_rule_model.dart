@@ -18,6 +18,23 @@ class NotificationRuleModel extends NotificationRule {
     required super.updatedAt,
   });
 
+  factory NotificationRuleModel.fromEntity(NotificationRule rule) {
+    return NotificationRuleModel(
+      id: rule.id,
+      targetType: rule.targetType,
+      targetId: rule.targetId,
+      daysBefore: rule.daysBefore,
+      triggerOnDueDate: rule.triggerOnDueDate,
+      triggerIfOverdue: rule.triggerIfOverdue,
+      overdueIntervalDays: rule.overdueIntervalDays,
+      isEnabled: rule.isEnabled,
+      quietHoursStart: rule.quietHoursStart,
+      quietHoursEnd: rule.quietHoursEnd,
+      createdAt: rule.createdAt,
+      updatedAt: rule.updatedAt,
+    );
+  }
+
   factory NotificationRuleModel.fromMap(Map<String, Object?> map) {
     return NotificationRuleModel(
       id: ModelUtils.readString(map, 'id'),

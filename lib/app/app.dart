@@ -7,7 +7,9 @@ import 'routes/app_routes.dart';
 import 'theme/app_theme.dart';
 
 class KinjuuApp extends StatefulWidget {
-  const KinjuuApp({super.key});
+  const KinjuuApp({super.key, this.controller});
+
+  final KinjuuAppController? controller;
 
   @override
   State<KinjuuApp> createState() => _KinjuuAppState();
@@ -15,16 +17,23 @@ class KinjuuApp extends StatefulWidget {
 
 class _KinjuuAppState extends State<KinjuuApp> {
   late final KinjuuAppController _controller;
+  late final bool _ownsController;
 
   @override
   void initState() {
     super.initState();
-    _controller = KinjuuAppController()..load();
+    _ownsController = widget.controller == null;
+    _controller = widget.controller ?? KinjuuAppController();
+    if (!_controller.isLoaded) {
+      _controller.load();
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (_ownsController) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 

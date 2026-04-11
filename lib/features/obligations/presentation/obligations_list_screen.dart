@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../app/state/kinjuu_app_scope.dart';
 import '../../../app/state/obligation_editor_args.dart';
+import '../../../core/utils/display_formatters.dart';
 import '../../../domain/enums/obligation_status.dart';
 import '../../../services/notifications/obligation_status_service_impl.dart';
 import '../../../shared/widgets/kinjuu_app_scaffold.dart';
@@ -13,7 +14,7 @@ class ObligationsListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = KinjuuAppScope.of(context);
-    final obligations = controller.obligations;
+    final obligations = controller.sortedObligations;
     final statusService = ObligationStatusServiceImpl();
 
     return KinjuuAppScaffold(
@@ -30,7 +31,8 @@ class ObligationsListScreen extends StatelessWidget {
       ],
       child: obligations.isEmpty
           ? const Center(
-              child: Text('No obligations yet. Create one to start the MVP loop.'),
+              child:
+                  Text('No obligations yet. Create one to start the MVP loop.'),
             )
           : ListView.separated(
               itemCount: obligations.length,
@@ -53,26 +55,35 @@ class ObligationsListScreen extends StatelessWidget {
                                 children: [
                                   Text(
                                     obligation.title,
-                                    style: Theme.of(context).textTheme.titleMedium,
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '${obligation.obligationType.storageValue} • due ${_formatDate(obligation.dueDate)}',
+                                    '${DisplayFormatters.titleCase(obligation.obligationType.storageValue)} • due ${DisplayFormatters.formatDate(obligation.dueDate)}',
                                   ),
                                   const SizedBox(height: 8),
                                   Wrap(
                                     spacing: 8,
                                     runSpacing: 8,
                                     children: [
-                                      Chip(label: Text(_labelForStatus(derived))),
+                                      Chip(
+                                          label:
+                                              Text(_labelForStatus(derived))),
                                       if (obligation.expectedAmount != null)
                                         Chip(
                                           label: Text(
-                                            '${obligation.currencyCode} ${obligation.expectedAmount!.toStringAsFixed(2)}',
+                                            DisplayFormatters.formatAmount(
+                                              obligation.currencyCode,
+                                              obligation.expectedAmount!,
+                                            ),
                                           ),
                                         ),
                                       if (obligation.category.isNotEmpty)
                                         Chip(label: Text(obligation.category)),
+                                      if (obligation.autopayExpected)
+                                        const Chip(
+                                            label: Text('Autopay expected')),
                                     ],
                                   ),
                                 ],
@@ -91,32 +102,69 @@ class ObligationsListScreen extends StatelessWidget {
                                 }
 
                                 if (value == 'paid') {
-                                  await controller.markObligationPaid(obligation.id);
+                                  await _runActionWithFeedback(
+                                    context,
+                                    successMessage:
+                                        'Marked ${obligation.title} as paid.',
+                                    action: () => controller.markObligationPaid(
+                                      obligation.id,
+                                    ),
+                                  );
                                   return;
                                 }
 
                                 if (value == 'pending') {
-                                  await controller.markObligationPending(
-                                    obligation.id,
+                                  await _runActionWithFeedback(
+                                    context,
+                                    successMessage:
+                                        'Marked ${obligation.title} as pending.',
+                                    action: () =>
+                                        controller.markObligationPending(
+                                      obligation.id,
+                                    ),
                                   );
                                   return;
                                 }
 
                                 if (value == 'archive') {
-                                  await controller.archiveObligation(obligation.id);
+                                  final confirmed = await _confirmAction(
+                                    context,
+                                    title: 'Archive obligation?',
+                                    message:
+                                        'Archived obligations are removed from the active MVP views and reminder scheduling.',
+                                  );
+                                  if (!confirmed) {
+                                    return;
+                                  }
+                                  if (!context.mounted) {
+                                    return;
+                                  }
+                                  await _runActionWithFeedback(
+                                    context,
+                                    successMessage:
+                                        'Archived ${obligation.title}.',
+                                    action: () => controller.archiveObligation(
+                                      obligation.id,
+                                    ),
+                                  );
                                 }
                               },
-                              itemBuilder: (context) => const [
-                                PopupMenuItem(value: 'edit', child: Text('Edit')),
-                                PopupMenuItem(
-                                  value: 'paid',
-                                  child: Text('Mark paid'),
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text('Edit'),
                                 ),
-                                PopupMenuItem(
-                                  value: 'pending',
-                                  child: Text('Mark pending'),
-                                ),
-                                PopupMenuItem(
+                                if (derived != ObligationStatus.paid)
+                                  const PopupMenuItem(
+                                    value: 'paid',
+                                    child: Text('Mark paid'),
+                                  ),
+                                if (derived != ObligationStatus.pending)
+                                  const PopupMenuItem(
+                                    value: 'pending',
+                                    child: Text('Mark pending'),
+                                  ),
+                                const PopupMenuItem(
                                   value: 'archive',
                                   child: Text('Archive'),
                                 ),
@@ -137,10 +185,51 @@ class ObligationsListScreen extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '${date.year}-$month-$day';
+  Future<void> _runActionWithFeedback(
+    BuildContext context, {
+    required Future<void> Function() action,
+    required String successMessage,
+  }) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await action();
+      if (!context.mounted) {
+        return;
+      }
+      messenger.showSnackBar(SnackBar(content: Text(successMessage)));
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      messenger.showSnackBar(SnackBar(content: Text(error.toString())));
+    }
+  }
+
+  Future<bool> _confirmAction(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
   }
 
   String _labelForStatus(ObligationStatus status) {

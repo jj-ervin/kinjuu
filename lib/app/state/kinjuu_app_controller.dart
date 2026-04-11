@@ -5,10 +5,12 @@ import '../../data/database/local_database.dart';
 import '../../data/repositories/local_account_repository.dart';
 import '../../data/repositories/local_audit_repository.dart';
 import '../../data/repositories/local_card_repository.dart';
+import '../../data/repositories/local_notification_rule_repository.dart';
 import '../../data/repositories/local_obligation_repository.dart';
 import '../../data/repositories/local_payment_event_repository.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/entities/audit_entry.dart';
+import '../../domain/entities/notification_rule.dart';
 import '../../domain/entities/obligation.dart';
 import '../../domain/entities/payment_event.dart';
 import '../../domain/entities/tracked_card.dart';
@@ -16,6 +18,7 @@ import '../../domain/enums/account_type.dart';
 import '../../domain/enums/audit_action_type.dart';
 import '../../domain/enums/audit_entity_type.dart';
 import '../../domain/enums/card_type.dart';
+import '../../domain/enums/notification_target_type.dart';
 import '../../domain/enums/obligation_status.dart';
 import '../../domain/enums/obligation_type.dart';
 import '../../domain/enums/payment_event_type.dart';
@@ -24,8 +27,12 @@ import '../../domain/enums/source_type.dart';
 import '../../domain/repositories/account_repository.dart';
 import '../../domain/repositories/audit_repository.dart';
 import '../../domain/repositories/card_repository.dart';
+import '../../domain/repositories/notification_rule_repository.dart';
 import '../../domain/repositories/obligation_repository.dart';
 import '../../domain/repositories/payment_event_repository.dart';
+import '../../domain/services/notification_service.dart';
+import '../../services/notifications/local_notification_service.dart';
+import '../../services/notifications/notification_defaults.dart';
 import '../../services/notifications/obligation_status_service_impl.dart';
 
 class KinjuuAppController extends ChangeNotifier {
@@ -35,20 +42,24 @@ class KinjuuAppController extends ChangeNotifier {
     CardRepository? cardRepository,
     ObligationRepository? obligationRepository,
     PaymentEventRepository? paymentEventRepository,
+    NotificationRuleRepository? notificationRuleRepository,
     AuditRepository? auditRepository,
+    NotificationService? notificationService,
     ObligationStatusServiceImpl? obligationStatusService,
-  })  : _accountRepository =
-            accountRepository ?? LocalAccountRepository(database ?? LocalDatabase()),
+  })  : _accountRepository = accountRepository ??
+            LocalAccountRepository(database ?? LocalDatabase()),
         _cardRepository =
             cardRepository ?? LocalCardRepository(database ?? LocalDatabase()),
-        _obligationRepository =
-            obligationRepository ??
-                LocalObligationRepository(database ?? LocalDatabase()),
-        _paymentEventRepository =
-            paymentEventRepository ??
-                LocalPaymentEventRepository(database ?? LocalDatabase()),
-        _auditRepository =
-            auditRepository ?? LocalAuditRepository(database ?? LocalDatabase()),
+        _obligationRepository = obligationRepository ??
+            LocalObligationRepository(database ?? LocalDatabase()),
+        _paymentEventRepository = paymentEventRepository ??
+            LocalPaymentEventRepository(database ?? LocalDatabase()),
+        _notificationRuleRepository = notificationRuleRepository ??
+            LocalNotificationRuleRepository(database ?? LocalDatabase()),
+        _auditRepository = auditRepository ??
+            LocalAuditRepository(database ?? LocalDatabase()),
+        _notificationService =
+            notificationService ?? LocalNotificationService(),
         _obligationStatusService =
             obligationStatusService ?? ObligationStatusServiceImpl();
 
@@ -56,46 +67,179 @@ class KinjuuAppController extends ChangeNotifier {
   final CardRepository _cardRepository;
   final ObligationRepository _obligationRepository;
   final PaymentEventRepository _paymentEventRepository;
+  final NotificationRuleRepository _notificationRuleRepository;
   final AuditRepository _auditRepository;
+  final NotificationService _notificationService;
   final ObligationStatusServiceImpl _obligationStatusService;
 
   List<Account> _accounts = const <Account>[];
   List<TrackedCard> _cards = const <TrackedCard>[];
   List<Obligation> _obligations = const <Obligation>[];
+  List<NotificationRule> _notificationRules = const <NotificationRule>[];
   List<AuditEntry> _auditEntries = const <AuditEntry>[];
   bool _isLoaded = false;
 
   bool get isLoaded => _isLoaded;
-  List<Account> get accounts => _accounts.where((entry) => !entry.isArchived).toList(growable: false);
-  List<TrackedCard> get cards => _cards.where((entry) => !entry.isArchived).toList(growable: false);
+  List<Account> get accounts =>
+      _accounts.where((entry) => !entry.isArchived).toList(growable: false);
+  List<TrackedCard> get cards =>
+      _cards.where((entry) => !entry.isArchived).toList(growable: false);
   List<Obligation> get obligations => _obligations
       .map(_withDerivedStatus)
       .where((entry) => entry.status != ObligationStatus.archived)
       .toList(growable: false);
+  List<Obligation> get sortedObligations => _obligationStatusService
+      .sortForUpcoming(obligations)
+      .toList(growable: false);
+  List<NotificationRule> get globalNotificationRules => _notificationRules
+      .where(
+          (entry) => entry.targetType == NotificationTargetType.globalDefault)
+      .toList(growable: false);
   List<AuditEntry> get auditEntries => _auditEntries;
 
-  List<Obligation> get dashboardObligations =>
-      _obligationStatusService.sortForUpcoming(obligations).take(5).toList(growable: false);
+  List<Obligation> get dashboardObligations => _obligationStatusService
+      .sortForUpcoming(obligations)
+      .take(5)
+      .toList(growable: false);
 
   int get dueTodayCount => obligations
-      .where((entry) => _obligationStatusService.deriveStatus(entry) == ObligationStatus.dueToday)
+      .where((entry) =>
+          _obligationStatusService.deriveStatus(entry) ==
+          ObligationStatus.dueToday)
       .length;
 
   int get overdueCount => obligations
-      .where((entry) => _obligationStatusService.deriveStatus(entry) == ObligationStatus.overdue)
+      .where((entry) =>
+          _obligationStatusService.deriveStatus(entry) ==
+          ObligationStatus.overdue)
       .length;
 
   int get upcomingCount => obligations
-      .where((entry) => _obligationStatusService.deriveStatus(entry) == ObligationStatus.upcoming)
+      .where((entry) =>
+          _obligationStatusService.deriveStatus(entry) ==
+          ObligationStatus.upcoming)
       .length;
 
   Future<void> load() async {
+    await _ensureNotificationDefaults();
     _accounts = await _accountRepository.getAll();
     _cards = await _cardRepository.getAll();
     _obligations = await _obligationRepository.getAll();
+    _notificationRules = await _notificationRuleRepository.getAll();
     _auditEntries = await _auditRepository.getRecent();
+    await _synchronizeReminderSchedules();
     _isLoaded = true;
     notifyListeners();
+  }
+
+  Future<void> saveGlobalNotificationDefaults({
+    required List<int> daysBefore,
+    required bool triggerOnDueDate,
+    required bool triggerIfOverdue,
+    required int overdueIntervalDays,
+    required String quietHoursStart,
+    required String quietHoursEnd,
+  }) async {
+    _validateQuietHoursText(quietHoursStart, fieldName: 'Quiet hours start');
+    _validateQuietHoursText(quietHoursEnd, fieldName: 'Quiet hours end');
+    _validatePositiveDayInterval(
+      overdueIntervalDays,
+      fieldName: 'Overdue interval days',
+    );
+
+    final normalizedDays = daysBefore.toSet().toList(growable: false)
+      ..sort((left, right) => right.compareTo(left));
+    if (!triggerOnDueDate && normalizedDays.isEmpty && !triggerIfOverdue) {
+      throw ArgumentError.value(
+        daysBefore,
+        'daysBefore',
+        'At least one reminder trigger must remain enabled.',
+      );
+    }
+
+    await _deleteGlobalNotificationRules();
+
+    final now = DateTime.now();
+    for (final days in normalizedDays) {
+      await _notificationRuleRepository.save(
+        NotificationRule(
+          id: 'global-default-$days-days-before',
+          targetType: NotificationTargetType.globalDefault,
+          targetId: null,
+          daysBefore: days,
+          triggerOnDueDate: false,
+          triggerIfOverdue: false,
+          overdueIntervalDays: null,
+          isEnabled: true,
+          quietHoursStart: quietHoursStart,
+          quietHoursEnd: quietHoursEnd,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+    }
+
+    if (triggerOnDueDate) {
+      await _notificationRuleRepository.save(
+        NotificationRule(
+          id: 'global-default-due-date',
+          targetType: NotificationTargetType.globalDefault,
+          targetId: null,
+          daysBefore: 0,
+          triggerOnDueDate: true,
+          triggerIfOverdue: false,
+          overdueIntervalDays: null,
+          isEnabled: true,
+          quietHoursStart: quietHoursStart,
+          quietHoursEnd: quietHoursEnd,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+    }
+
+    if (triggerIfOverdue) {
+      await _notificationRuleRepository.save(
+        NotificationRule(
+          id: 'global-default-overdue',
+          targetType: NotificationTargetType.globalDefault,
+          targetId: null,
+          daysBefore: 0,
+          triggerOnDueDate: false,
+          triggerIfOverdue: true,
+          overdueIntervalDays: overdueIntervalDays,
+          isEnabled: true,
+          quietHoursStart: quietHoursStart,
+          quietHoursEnd: quietHoursEnd,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+    }
+
+    await _recordAudit(
+      entityType: AuditEntityType.settings,
+      entityId: 'global-notification-defaults',
+      actionType: AuditActionType.updated,
+      summary:
+          'Updated global reminder defaults (${normalizedDays.join('/')}, due: $triggerOnDueDate, overdue: $triggerIfOverdue)',
+    );
+    await load();
+  }
+
+  Future<void> restoreGlobalNotificationDefaults() async {
+    await _deleteGlobalNotificationRules();
+    final now = DateTime.now();
+    for (final rule in NotificationDefaults.globalDefaults(now: now)) {
+      await _notificationRuleRepository.save(rule);
+    }
+    await _recordAudit(
+      entityType: AuditEntityType.settings,
+      entityId: 'global-notification-defaults',
+      actionType: AuditActionType.updated,
+      summary: 'Restored global reminder defaults',
+    );
+    await load();
   }
 
   Obligation? obligationById(String id) {
@@ -116,10 +260,13 @@ class KinjuuAppController extends ChangeNotifier {
   }) async {
     _requireNonEmpty(name, fieldName: 'Account name');
     _requireNonEmpty(institutionName, fieldName: 'Institution name');
-    _validateMaskedReference(maskedReference, fieldName: 'Account masked reference');
+    _validateMaskedReference(maskedReference,
+        fieldName: 'Account masked reference');
 
     final now = DateTime.now();
-    final existing = existingId == null ? null : await _accountRepository.getById(existingId);
+    final existing = existingId == null
+        ? null
+        : await _accountRepository.getById(existingId);
     final account = Account(
       id: existing?.id ?? _nextId('account'),
       name: name.trim(),
@@ -136,8 +283,11 @@ class KinjuuAppController extends ChangeNotifier {
     await _recordAudit(
       entityType: AuditEntityType.account,
       entityId: account.id,
-      actionType: existing == null ? AuditActionType.created : AuditActionType.updated,
-      summary: existing == null ? 'Created account ${account.name}' : 'Updated account ${account.name}',
+      actionType:
+          existing == null ? AuditActionType.created : AuditActionType.updated,
+      summary: existing == null
+          ? 'Created account ${account.name}'
+          : 'Updated account ${account.name}',
     );
     await load();
   }
@@ -170,12 +320,14 @@ class KinjuuAppController extends ChangeNotifier {
   }) async {
     _requireNonEmpty(name, fieldName: 'Card name');
     _requireNonEmpty(issuer, fieldName: 'Card issuer');
-    _validateMaskedReference(maskedReference, fieldName: 'Card masked reference');
+    _validateMaskedReference(maskedReference,
+        fieldName: 'Card masked reference');
     _validateOptionalDay(statementDay, fieldName: 'Statement day');
     _validateOptionalDay(dueDay, fieldName: 'Due day');
 
     final now = DateTime.now();
-    final existing = existingId == null ? null : await _cardRepository.getById(existingId);
+    final existing =
+        existingId == null ? null : await _cardRepository.getById(existingId);
     final card = TrackedCard(
       id: existing?.id ?? _nextId('card'),
       name: name.trim(),
@@ -194,8 +346,11 @@ class KinjuuAppController extends ChangeNotifier {
     await _recordAudit(
       entityType: AuditEntityType.card,
       entityId: card.id,
-      actionType: existing == null ? AuditActionType.created : AuditActionType.updated,
-      summary: existing == null ? 'Created card ${card.name}' : 'Updated card ${card.name}',
+      actionType:
+          existing == null ? AuditActionType.created : AuditActionType.updated,
+      summary: existing == null
+          ? 'Created card ${card.name}'
+          : 'Updated card ${card.name}',
     );
     await load();
   }
@@ -247,7 +402,9 @@ class KinjuuAppController extends ChangeNotifier {
     _validateCurrencyCode(currencyCode);
 
     final now = DateTime.now();
-    final existing = existingId == null ? null : await _obligationRepository.getById(existingId);
+    final existing = existingId == null
+        ? null
+        : await _obligationRepository.getById(existingId);
     final base = Obligation(
       id: existing?.id ?? _nextId('obligation'),
       title: title.trim(),
@@ -257,7 +414,9 @@ class KinjuuAppController extends ChangeNotifier {
       linkedCardId: linkedCardId,
       expectedAmount: expectedAmount,
       minimumAmount: minimumAmount,
-      currencyCode: currencyCode.trim().isEmpty ? 'USD' : currencyCode.trim().toUpperCase(),
+      currencyCode: currencyCode.trim().isEmpty
+          ? 'USD'
+          : currencyCode.trim().toUpperCase(),
       dueDate: dueDate,
       statementDate: statementDate,
       recurrenceRule: recurrenceRule,
@@ -274,7 +433,8 @@ class KinjuuAppController extends ChangeNotifier {
     await _recordAudit(
       entityType: AuditEntityType.obligation,
       entityId: obligation.id,
-      actionType: existing == null ? AuditActionType.created : AuditActionType.updated,
+      actionType:
+          existing == null ? AuditActionType.created : AuditActionType.updated,
       summary: existing == null
           ? 'Created obligation ${obligation.title}'
           : 'Updated obligation ${obligation.title}',
@@ -369,11 +529,120 @@ class KinjuuAppController extends ChangeNotifier {
         summary: summary,
         createdAt: now,
         timeLoc: TimeLocFactory.create(
-          sequence: 'audit-${entityType.storageValue}-${actionType.storageValue}-$entityId',
+          sequence:
+              'audit-${entityType.storageValue}-${actionType.storageValue}-$entityId',
           now: now,
         ),
       ),
     );
+  }
+
+  Future<void> _ensureNotificationDefaults() async {
+    final existingRules = await _notificationRuleRepository.getAll();
+    final hasGlobalDefaults = existingRules.any(
+      (entry) => entry.targetType == NotificationTargetType.globalDefault,
+    );
+    if (hasGlobalDefaults) {
+      return;
+    }
+
+    final now = DateTime.now();
+    for (final rule in NotificationDefaults.globalDefaults(now: now)) {
+      await _notificationRuleRepository.save(rule);
+    }
+  }
+
+  Future<void> _deleteGlobalNotificationRules() async {
+    final existing = await _notificationRuleRepository.getAll();
+    final globalRules = existing
+        .where(
+            (entry) => entry.targetType == NotificationTargetType.globalDefault)
+        .toList(growable: false);
+    for (final rule in globalRules) {
+      await _notificationRuleRepository.delete(rule.id);
+    }
+  }
+
+  Future<void> _synchronizeReminderSchedules() async {
+    try {
+      final allRules = await _notificationRuleRepository.getAll();
+      final globalRules = allRules
+          .where((entry) =>
+              entry.targetType == NotificationTargetType.globalDefault)
+          .toList(growable: false);
+      final obligations =
+          _obligations.map(_withDerivedStatus).toList(growable: false);
+
+      for (final obligation in obligations) {
+        await _notificationService.cancelByTarget(obligation.id);
+      }
+
+      for (final obligation in obligations) {
+        if (!_isReminderEligible(obligation)) {
+          continue;
+        }
+
+        final rules = _rulesForObligation(
+          obligation.id,
+          allRules: allRules,
+          globalRules: globalRules,
+        );
+        final plan = _notificationService.buildPlanForObligation(
+          obligation: obligation,
+          rules: rules,
+          notificationTitle: obligation.title,
+          notificationBody: _notificationBodyForObligation(obligation),
+        );
+        if (plan.isEmpty) {
+          continue;
+        }
+
+        await _notificationService.schedulePlan(plan);
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Kinjuu reminder synchronization failed: $error\n$stackTrace');
+    }
+  }
+
+  List<NotificationRule> _rulesForObligation(
+    String obligationId, {
+    required List<NotificationRule> allRules,
+    required List<NotificationRule> globalRules,
+  }) {
+    final directRules = allRules
+        .where(
+          (entry) =>
+              entry.targetType == NotificationTargetType.obligation &&
+              entry.targetId == obligationId,
+        )
+        .toList(growable: false);
+    if (directRules.isNotEmpty) {
+      return directRules;
+    }
+    return globalRules;
+  }
+
+  bool _isReminderEligible(Obligation obligation) {
+    switch (obligation.status) {
+      case ObligationStatus.archived:
+      case ObligationStatus.paid:
+        return false;
+      case ObligationStatus.upcoming:
+      case ObligationStatus.dueToday:
+      case ObligationStatus.pending:
+      case ObligationStatus.overdue:
+        return true;
+    }
+  }
+
+  String _notificationBodyForObligation(Obligation obligation) {
+    return '${obligation.title} is due on ${_formatDate(obligation.dueDate)}.';
+  }
+
+  String _formatDate(DateTime value) {
+    final month = value.month.toString().padLeft(2, '0');
+    final day = value.day.toString().padLeft(2, '0');
+    return '$month/$day/${value.year}';
   }
 
   Obligation _withDerivedStatus(Obligation obligation) {
@@ -400,7 +669,8 @@ class KinjuuAppController extends ChangeNotifier {
     );
   }
 
-  String _nextId(String prefix) => '$prefix-${DateTime.now().microsecondsSinceEpoch}';
+  String _nextId(String prefix) =>
+      '$prefix-${DateTime.now().microsecondsSinceEpoch}';
 
   void _requireNonEmpty(String value, {required String fieldName}) {
     if (value.trim().isEmpty) {
@@ -428,7 +698,8 @@ class KinjuuAppController extends ChangeNotifier {
       return;
     }
     if (value < 1 || value > 31) {
-      throw ArgumentError.value(value, fieldName, '$fieldName must be between 1 and 31.');
+      throw ArgumentError.value(
+          value, fieldName, '$fieldName must be between 1 and 31.');
     }
   }
 
@@ -437,7 +708,8 @@ class KinjuuAppController extends ChangeNotifier {
       return;
     }
     if (value < 0) {
-      throw ArgumentError.value(value, fieldName, '$fieldName cannot be negative.');
+      throw ArgumentError.value(
+          value, fieldName, '$fieldName cannot be negative.');
     }
   }
 
@@ -448,6 +720,42 @@ class KinjuuAppController extends ChangeNotifier {
         value,
         'currencyCode',
         'Currency code must be a 3-letter code such as USD.',
+      );
+    }
+  }
+
+  void _validateQuietHoursText(String value, {required String fieldName}) {
+    if (!RegExp(r'^\d{2}:\d{2}$').hasMatch(value.trim())) {
+      throw ArgumentError.value(
+        value,
+        fieldName,
+        '$fieldName must use HH:MM in 24-hour time.',
+      );
+    }
+
+    final parts = value.split(':');
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null ||
+        minute == null ||
+        hour < 0 ||
+        hour > 23 ||
+        minute < 0 ||
+        minute > 59) {
+      throw ArgumentError.value(
+        value,
+        fieldName,
+        '$fieldName must be a valid 24-hour time.',
+      );
+    }
+  }
+
+  void _validatePositiveDayInterval(int value, {required String fieldName}) {
+    if (value < 1 || value > 31) {
+      throw ArgumentError.value(
+        value,
+        fieldName,
+        '$fieldName must be between 1 and 31.',
       );
     }
   }

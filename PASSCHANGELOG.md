@@ -583,3 +583,64 @@ Agent/Model: Claude Sonnet 4.6
 
 ### Handoff notes
 - Future passes should use the updated templates in `Kinjuu_PASS_Packet_Set.md` which now pre-fill `version: time.loc/1.0` and indicate the correct format for each field.
+
+## PASS 0008 — Notification Delivery Wiring
+
+### time.loc
+version: time.loc/1.0
+stamp.local: 2026-04-10T17:21:27.1659806-07:00
+stamp.local.day: Friday
+stamp.utc: 2026-04-11T00:21:27.1659806Z
+stamp.utc.day: Saturday
+geo.city:
+geo.region:
+geo.country: US
+geo.source: declared
+seq: 01JRG0E1CXQXK7R8C9A1NP0008
+sig: unavailable
+geo.lat:
+geo.lon:
+geo.alt:
+
+Date: 2026-04-10
+Agent/Model: GitHub Copilot (GPT-5.4)
+
+### Completed
+- Wired the active obligation reminder flow to real local device scheduling through `flutter_local_notifications` with timezone-aware one-shot scheduling.
+- Moved `notification_rules` onto the SQLite-backed local repository path and seeded the MVP global default reminder rules when absent.
+- Added controller-driven reminder synchronization so persisted obligations are canceled and rescheduled on load, create, edit, status change, and archive events.
+- Added regression tests covering scheduling, rescheduling, cancellation, persisted reload scheduling, and rejection of stale reminder plans.
+- Verified the pass with `flutter analyze` and `flutter test`.
+
+### Files created/updated
+- `HANDSHAKE_PASS_0008.md`
+- `HANDOFF_PASS_0008.md`
+- `pubspec.yaml`
+- `pubspec.lock`
+- `lib/app/state/kinjuu_app_controller.dart`
+- `lib/data/models/notification_rule_model.dart`
+- `lib/data/repositories/local_notification_rule_repository.dart`
+- `lib/services/notifications/local_notification_service.dart`
+- `test/app/state/kinjuu_app_controller_test.dart`
+- `windows/flutter/generated_plugin_registrant.cc`
+- `windows/flutter/generated_plugins.cmake`
+- `PASSCHANGELOG.md`
+
+### Decisions made
+- Chose the narrower MVP interpretation that the current reminder flow should use persisted global default rules unless and until a rule-editing surface exists.
+- Kept scheduling synchronization centralized in the app controller so the existing CRUD/status path stays the single source of reminder truth.
+- Kept `time.loc` selective: scheduling metadata remains plain reminder-plan data, while audit and payment-event records remain the only app records carrying provenance.
+- Limited real notification delivery to platforms supported by the adopted local notification plugin, while preserving no-op behavior on unsupported platforms rather than broadening the architecture.
+
+### Explicitly not done
+- No cloud messaging, remote push infrastructure, analytics notifications, bank triggers, budgeting, or premium/connect work.
+- No new notification settings UI or per-obligation rule editing surface.
+- No recurrence expansion beyond the currently implemented due-date/status-derived MVP behavior.
+
+### Open issues
+- Windows remains a non-scheduling platform in this pass; the plugin registration change is only for timezone lookup support during development.
+- The current MVP still relies on seeded defaults because there is not yet a user-facing notification preference editor.
+
+### Handoff notes
+- Reminder synchronization now follows the persistence-backed obligation path: load all obligations, cancel existing target notifications, then rebuild and schedule only eligible future reminders.
+- Paid and archived obligations are cancellation-only; upcoming, due-today, pending, and overdue obligations remain schedule-eligible if at least one reminder slot is still in the future.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/routes/app_routes.dart';
 import '../../../app/state/kinjuu_app_scope.dart';
+import '../../../core/utils/display_formatters.dart';
 import '../../../services/notifications/obligation_status_service_impl.dart';
 import '../../../shared/widgets/kinjuu_app_scaffold.dart';
 
@@ -51,7 +52,8 @@ class DashboardScreen extends StatelessWidget {
                   if (controller.dashboardObligations.isEmpty)
                     const Text('No obligations created yet.')
                   else
-                    for (final obligation in controller.dashboardObligations) ...[
+                    for (final obligation
+                        in controller.dashboardObligations) ...[
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(obligation.title),
@@ -91,6 +93,11 @@ class DashboardScreen extends StatelessWidget {
                 icon: Icons.calendar_month_outlined,
                 routeName: AppRoutes.calendar,
               ),
+              _QuickLink(
+                label: 'Settings',
+                icon: Icons.settings_outlined,
+                routeName: AppRoutes.settings,
+              ),
             ],
           ),
         ],
@@ -99,9 +106,7 @@ class DashboardScreen extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '${date.year}-$month-$day';
+    return DisplayFormatters.formatDate(date);
   }
 
   String _labelForStatus(Enum status) =>

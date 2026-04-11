@@ -1,7 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 
 import '../../../app/routes/app_routes.dart';
 import '../../../app/state/kinjuu_app_scope.dart';
+import '../../../core/utils/display_formatters.dart';
 import '../../../domain/entities/account.dart';
 import '../../../domain/entities/tracked_card.dart';
 import '../../../domain/enums/account_type.dart';
@@ -53,8 +56,9 @@ class AccountsCardsScreen extends StatelessWidget {
                           title: account.name,
                           subtitle:
                               '${account.institutionName} • ${account.maskedReference}',
-                          onEdit: () => _showAccountDialog(context, account: account),
-                          onArchive: () => controller.archiveAccount(account.id),
+                          onEdit: () =>
+                              _showAccountDialog(context, account: account),
+                          onArchive: () => _archiveAccount(context, account),
                         ),
                         if (account != controller.accounts.last)
                           const Divider(height: 20),
@@ -75,9 +79,10 @@ class AccountsCardsScreen extends StatelessWidget {
                           subtitle:
                               '${card.issuer} • ${card.maskedReference}${card.dueDay == null ? '' : ' • due ${card.dueDay}'}',
                           onEdit: () => _showCardDialog(context, card: card),
-                          onArchive: () => controller.archiveCard(card.id),
+                          onArchive: () => _archiveCard(context, card),
                         ),
-                        if (card != controller.cards.last) const Divider(height: 20),
+                        if (card != controller.cards.last)
+                          const Divider(height: 20),
                       ],
                     ],
                   ),
@@ -87,10 +92,11 @@ class AccountsCardsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showAccountDialog(
+  void _showAccountDialog(
     BuildContext context, {
     Account? account,
-  }) async {
+  }) {
+    final parentMessenger = ScaffoldMessenger.of(context);
     final nameController = TextEditingController(text: account?.name ?? '');
     final institutionController =
         TextEditingController(text: account?.institutionName ?? '');
@@ -100,7 +106,7 @@ class AccountsCardsScreen extends StatelessWidget {
     var type = account?.accountType ?? AccountType.checking;
     final formKey = GlobalKey<FormState>();
 
-    await showDialog<void>(
+    showDialog<void>(
       context: context,
       builder: (context) {
         return StatefulBuilder(
@@ -109,6 +115,7 @@ class AccountsCardsScreen extends StatelessWidget {
               title: Text(account == null ? 'Add account' : 'Edit account'),
               content: Form(
                 key: formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -117,7 +124,9 @@ class AccountsCardsScreen extends StatelessWidget {
                         controller: nameController,
                         decoration: const InputDecoration(labelText: 'Name'),
                         validator: (value) =>
-                            value == null || value.trim().isEmpty ? 'Required' : null,
+                            value == null || value.trim().isEmpty
+                                ? 'Required'
+                                : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -125,7 +134,9 @@ class AccountsCardsScreen extends StatelessWidget {
                         decoration:
                             const InputDecoration(labelText: 'Institution'),
                         validator: (value) =>
-                            value == null || value.trim().isEmpty ? 'Required' : null,
+                            value == null || value.trim().isEmpty
+                                ? 'Required'
+                                : null,
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<AccountType>(
@@ -147,8 +158,10 @@ class AccountsCardsScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: maskedController,
-                        decoration:
-                            const InputDecoration(labelText: 'Masked reference'),
+                        decoration: const InputDecoration(
+                          labelText: 'Masked reference',
+                          helperText: 'Use a masked label such as ...1234.',
+                        ),
                         validator: (value) => _validateMaskedReference(value),
                       ),
                       const SizedBox(height: 12),
@@ -171,16 +184,32 @@ class AccountsCardsScreen extends StatelessWidget {
                     if (!formKey.currentState!.validate()) {
                       return;
                     }
-                    await KinjuuAppScope.of(context).saveAccount(
-                      existingId: account?.id,
-                      name: nameController.text,
-                      institutionName: institutionController.text,
-                      accountType: type,
-                      maskedReference: maskedController.text,
-                      notes: notesController.text,
-                    );
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
+                    try {
+                      await KinjuuAppScope.of(context).saveAccount(
+                        existingId: account?.id,
+                        name: nameController.text,
+                        institutionName: institutionController.text,
+                        accountType: type,
+                        maskedReference: maskedController.text,
+                        notes: notesController.text,
+                      );
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        parentMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              account == null
+                                  ? 'Account created.'
+                                  : 'Account updated.',
+                            ),
+                          ),
+                        );
+                      }
+                    } catch (error) {
+                      if (context.mounted) {
+                        parentMessenger.showSnackBar(
+                            SnackBar(content: Text(error.toString())));
+                      }
                     }
                   },
                   child: Text(account == null ? 'Create' : 'Save'),
@@ -193,22 +222,24 @@ class AccountsCardsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showCardDialog(
+  void _showCardDialog(
     BuildContext context, {
     TrackedCard? card,
-  }) async {
+  }) {
+    final parentMessenger = ScaffoldMessenger.of(context);
     final nameController = TextEditingController(text: card?.name ?? '');
     final issuerController = TextEditingController(text: card?.issuer ?? '');
     final maskedController =
         TextEditingController(text: card?.maskedReference ?? '');
     final statementController =
         TextEditingController(text: card?.statementDay?.toString() ?? '');
-    final dueController = TextEditingController(text: card?.dueDay?.toString() ?? '');
+    final dueController =
+        TextEditingController(text: card?.dueDay?.toString() ?? '');
     final notesController = TextEditingController(text: card?.notes ?? '');
     var type = card?.cardType ?? CardType.credit;
     final formKey = GlobalKey<FormState>();
 
-    await showDialog<void>(
+    showDialog<void>(
       context: context,
       builder: (context) {
         return StatefulBuilder(
@@ -217,6 +248,7 @@ class AccountsCardsScreen extends StatelessWidget {
               title: Text(card == null ? 'Add card' : 'Edit card'),
               content: Form(
                 key: formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -225,14 +257,18 @@ class AccountsCardsScreen extends StatelessWidget {
                         controller: nameController,
                         decoration: const InputDecoration(labelText: 'Name'),
                         validator: (value) =>
-                            value == null || value.trim().isEmpty ? 'Required' : null,
+                            value == null || value.trim().isEmpty
+                                ? 'Required'
+                                : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: issuerController,
                         decoration: const InputDecoration(labelText: 'Issuer'),
                         validator: (value) =>
-                            value == null || value.trim().isEmpty ? 'Required' : null,
+                            value == null || value.trim().isEmpty
+                                ? 'Required'
+                                : null,
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<CardType>(
@@ -254,8 +290,10 @@ class AccountsCardsScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: maskedController,
-                        decoration:
-                            const InputDecoration(labelText: 'Masked reference'),
+                        decoration: const InputDecoration(
+                          labelText: 'Masked reference',
+                          helperText: 'Use a masked label such as ...4242.',
+                        ),
                         validator: (value) => _validateMaskedReference(value),
                       ),
                       const SizedBox(height: 12),
@@ -293,18 +331,32 @@ class AccountsCardsScreen extends StatelessWidget {
                     if (!formKey.currentState!.validate()) {
                       return;
                     }
-                    await KinjuuAppScope.of(context).saveCard(
-                      existingId: card?.id,
-                      name: nameController.text,
-                      issuer: issuerController.text,
-                      cardType: type,
-                      maskedReference: maskedController.text,
-                      statementDay: int.tryParse(statementController.text),
-                      dueDay: int.tryParse(dueController.text),
-                      notes: notesController.text,
-                    );
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
+                    try {
+                      await KinjuuAppScope.of(context).saveCard(
+                        existingId: card?.id,
+                        name: nameController.text,
+                        issuer: issuerController.text,
+                        cardType: type,
+                        maskedReference: maskedController.text,
+                        statementDay: int.tryParse(statementController.text),
+                        dueDay: int.tryParse(dueController.text),
+                        notes: notesController.text,
+                      );
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        parentMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              card == null ? 'Card created.' : 'Card updated.',
+                            ),
+                          ),
+                        );
+                      }
+                    } catch (error) {
+                      if (context.mounted) {
+                        parentMessenger.showSnackBar(
+                            SnackBar(content: Text(error.toString())));
+                      }
                     }
                   },
                   child: Text(card == null ? 'Create' : 'Save'),
@@ -317,8 +369,92 @@ class AccountsCardsScreen extends StatelessWidget {
     );
   }
 
-  String _titleForEnum(String value) =>
-      value.split('_').map((entry) => '${entry[0].toUpperCase()}${entry.substring(1)}').join(' ');
+  Future<void> _archiveAccount(BuildContext context, Account account) async {
+    final confirmed = await _confirmArchive(
+      context,
+      title: 'Archive account?',
+      message:
+          'Archive ${account.name} and remove it from active account pickers?',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    await _runWithFeedback(
+      context,
+      successMessage: 'Archived ${account.name}.',
+      action: () => KinjuuAppScope.of(context).archiveAccount(account.id),
+    );
+  }
+
+  Future<void> _archiveCard(BuildContext context, TrackedCard card) async {
+    final confirmed = await _confirmArchive(
+      context,
+      title: 'Archive card?',
+      message: 'Archive ${card.name} and remove it from active card pickers?',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    await _runWithFeedback(
+      context,
+      successMessage: 'Archived ${card.name}.',
+      action: () => KinjuuAppScope.of(context).archiveCard(card.id),
+    );
+  }
+
+  Future<void> _runWithFeedback(
+    BuildContext context, {
+    required Future<void> Function() action,
+    required String successMessage,
+  }) async {
+    try {
+      await action();
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(successMessage)),
+      );
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString())),
+      );
+    }
+  }
+
+  Future<bool> _confirmArchive(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Archive'),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
+  }
+
+  String _titleForEnum(String value) => DisplayFormatters.titleCase(value);
 
   String? _validateMaskedReference(String? value) {
     final trimmed = (value ?? '').trim();

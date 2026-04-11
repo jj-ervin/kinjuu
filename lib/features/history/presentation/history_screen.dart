@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/routes/app_routes.dart';
 import '../../../app/state/kinjuu_app_scope.dart';
+import '../../../core/utils/display_formatters.dart';
 import '../../../shared/widgets/kinjuu_app_scaffold.dart';
 
 class HistoryScreen extends StatelessWidget {
@@ -15,30 +16,56 @@ class HistoryScreen extends StatelessWidget {
       currentRoute: AppRoutes.history,
       title: 'History / Activity',
       child: controller.auditEntries.isEmpty
-          ? const Center(child: Text('No activity yet.'))
+          ? const Center(
+              child: Text(
+                'No activity yet. Create or update an obligation to start the history trail.',
+              ),
+            )
           : ListView.separated(
               itemCount: controller.auditEntries.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final entry = controller.auditEntries[index];
                 return Card(
-                  child: ListTile(
-                    title: Text(entry.summary),
-                    subtitle: Text(
-                      '${entry.entityType.storageValue} • ${entry.actionType.storageValue} • ${_formatDateTime(entry.createdAt)}',
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(entry.summary),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            Chip(
+                              label: Text(
+                                DisplayFormatters.titleCase(
+                                  entry.entityType.storageValue,
+                                ),
+                              ),
+                            ),
+                            Chip(
+                              label: Text(
+                                DisplayFormatters.titleCase(
+                                  entry.actionType.storageValue,
+                                ),
+                              ),
+                            ),
+                            Chip(
+                              label: Text(
+                                DisplayFormatters.formatDateTime(
+                                    entry.createdAt),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 );
               },
             ),
     );
-  }
-
-  String _formatDateTime(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '${date.year}-$month-$day $hour:$minute';
   }
 }
