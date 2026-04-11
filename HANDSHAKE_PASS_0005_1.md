@@ -1,16 +1,16 @@
 # HANDSHAKE — PASS 0005.1
 
 ## time.loc
-version: 1
+version: time.loc/1.0
 stamp.local: 2026-04-10T15:30:14-07:00
-stamp.local.day: 2026-04-10
+stamp.local.day: Friday
 stamp.utc: 2026-04-10T22:30:14Z
-stamp.utc.day: 2026-04-10
+stamp.utc.day: Friday
 geo.city:
 geo.region:
-geo.country: USA
-geo.source: environment_estimate
-seq: pass-0005-1-handshake-1
+geo.country: US
+geo.source: declared
+seq: 01JRFQXZRBGHN3P6VS0MWT5016
 sig: unavailable
 geo.lat:
 geo.lon:

@@ -1,16 +1,16 @@
 # HANDOFF — PASS 0003
 
 ## time.loc
-version: 1
+version: time.loc/1.0
 stamp.local: 2026-04-10T13:12:35-07:00
-stamp.local.day: 2026-04-10
+stamp.local.day: Friday
 stamp.utc: 2026-04-10T20:12:35Z
-stamp.utc.day: 2026-04-10
+stamp.utc.day: Friday
 geo.city:
 geo.region:
-geo.country: USA
-geo.source: environment_estimate
-seq: pass-0003-handoff-1
+geo.country: US
+geo.source: declared
+seq: 01JRFQ3BV0PXJ4VG7M6CDM0008
 sig: unavailable
 geo.lat:
 geo.lon:

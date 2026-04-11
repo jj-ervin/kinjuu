@@ -393,17 +393,17 @@ Recommended format:
 ## PASS 0001 — Contract Freeze
 
 ### time.loc
-version:
-stamp.local:
-stamp.local.day:
-stamp.utc:
-stamp.utc.day:
+version: time.loc/1.0
+stamp.local:                 # ISO-8601/RFC3339 with explicit offset, e.g. 2026-04-10T13:00:00-07:00
+stamp.local.day:             # English weekday name, capitalized, e.g. Friday
+stamp.utc:                   # ISO-8601/RFC3339 UTC with Z, e.g. 2026-04-10T20:00:00Z
+stamp.utc.day:               # English weekday name, capitalized, e.g. Friday
 geo.city:
 geo.region:
-geo.country:
-geo.source:
-seq:
-sig:
+geo.country:                 # ISO-3166-1 alpha-2, e.g. US
+geo.source:                  # declared | ip | gps | unavailable
+seq:                         # ULID (26-char Crockford base32), e.g. 01JRFQ3BV0PXJ4VG7M6CDM0001
+sig:                         # unsigned | unavailable | <signature>
 geo.lat:
 geo.lon:
 geo.alt:
@@ -453,17 +453,17 @@ Use this at the end of each pass.
 # HANDOFF — PASS 000X
 
 ## time.loc
-version:
-stamp.local:
-stamp.local.day:
-stamp.utc:
-stamp.utc.day:
+version: time.loc/1.0
+stamp.local:                 # ISO-8601/RFC3339 with explicit offset, e.g. 2026-04-10T13:00:00-07:00
+stamp.local.day:             # English weekday name, capitalized, e.g. Friday
+stamp.utc:                   # ISO-8601/RFC3339 UTC with Z, e.g. 2026-04-10T20:00:00Z
+stamp.utc.day:               # English weekday name, capitalized, e.g. Friday
 geo.city:
 geo.region:
-geo.country:
-geo.source:
-seq:
-sig:
+geo.country:                 # ISO-3166-1 alpha-2, e.g. US
+geo.source:                  # declared | ip | gps | unavailable
+seq:                         # ULID (26-char Crockford base32), e.g. 01JRFQ3BV0PXJ4VG7M6CDM0001
+sig:                         # unsigned | unavailable | <signature>
 geo.lat:
 geo.lon:
 geo.alt:
@@ -505,17 +505,17 @@ Use this at the beginning of the next pass.
 # HANDSHAKE — PASS 000X
 
 ## time.loc
-version:
-stamp.local:
-stamp.local.day:
-stamp.utc:
-stamp.utc.day:
+version: time.loc/1.0
+stamp.local:                 # ISO-8601/RFC3339 with explicit offset, e.g. 2026-04-10T13:00:00-07:00
+stamp.local.day:             # English weekday name, capitalized, e.g. Friday
+stamp.utc:                   # ISO-8601/RFC3339 UTC with Z, e.g. 2026-04-10T20:00:00Z
+stamp.utc.day:               # English weekday name, capitalized, e.g. Friday
 geo.city:
 geo.region:
-geo.country:
-geo.source:
-seq:
-sig:
+geo.country:                 # ISO-3166-1 alpha-2, e.g. US
+geo.source:                  # declared | ip | gps | unavailable
+seq:                         # ULID (26-char Crockford base32), e.g. 01JRFQ3BV0PXJ4VG7M6CDM0001
+sig:                         # unsigned | unavailable | <signature>
 geo.lat:
 geo.lon:
 geo.alt:

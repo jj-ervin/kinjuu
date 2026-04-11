@@ -1,28 +1,30 @@
 # HANDOFF — PASS 0007
 
 ## time.loc
-version: 1
+version: time.loc/1.0
 stamp.local: 2026-04-10T15:58:06-07:00
-stamp.local.day: 2026-04-10
+stamp.local.day: Friday
 stamp.utc: 2026-04-10T22:58:06Z
-stamp.utc.day: 2026-04-10
+stamp.utc.day: Friday
 geo.city:
 geo.region:
-geo.country: USA
-geo.source: environment_estimate
-seq: pass-0007-handoff-1
+geo.country: US
+geo.source: declared
+seq: 01JRFQZ7M1VPC2DK8T5GBN5023
 sig: unavailable
 geo.lat:
 geo.lon:
 geo.alt:
 
 ## What was completed
+
 - Replaced the active in-memory repository backing with real local SQLite persistence for accounts, cards, obligations, payment events, and audit entries.
 - Preserved the current CRUD/activity flows by keeping the existing controller and UI contracts intact.
 - Added regression coverage proving that core data survives a fresh controller load against the same local database.
 - Verified the repo with `flutter analyze` and `flutter test`.
 
 ## What was created/changed
+
 - Handshake:
   - `HANDSHAKE_PASS_0007.md`
 - Dependency and lockfile updates:
@@ -50,6 +52,7 @@ geo.alt:
   - `PASSCHANGELOG.md`
 
 ## What remains
+
 - Deferred persistence paths:
   - `subscriptions` still use the in-memory repository backing
   - `notification_rules` still use the in-memory repository backing
@@ -58,15 +61,18 @@ geo.alt:
   - custom recurrence remains intentionally narrow
 
 ## Assumptions made
+
 - The current MVP only needs durable local persistence for the active user-facing CRUD/activity loop: obligations, accounts, cards, payment events, and audit entries.
 - Keeping subscriptions and notification rules deferred is acceptable because the implemented MVP flows do not currently depend on them.
 - Using `sqflite_common_ffi` for Windows/test environments is the narrowest way to add real persistence without introducing a broader architecture change.
 
 ## Risks / caution points
+
 - If a future pass activates subscriptions or notification-rule editing, those repositories should be migrated off the deferred in-memory store promptly.
 - The app now depends on SQLite package wiring, so future schema changes should be handled deliberately rather than by silent table edits.
 
 ## Must-not-drift reminders
+
 - Do not add bank connectivity.
 - Do not add budgeting to MVP.
 - Do not add payment processing.

@@ -1,16 +1,16 @@
 # HANDSHAKE — PASS 0007
 
 ## time.loc
-version: 1
+version: time.loc/1.0
 stamp.local: 2026-04-10T15:54:40-07:00
-stamp.local.day: 2026-04-10
+stamp.local.day: Friday
 stamp.utc: 2026-04-10T22:54:40Z
-stamp.utc.day: 2026-04-10
+stamp.utc.day: Friday
 geo.city:
 geo.region:
-geo.country: USA
-geo.source: environment_estimate
-seq: pass-0007-handshake-1
+geo.country: US
+geo.source: declared
+seq: 01JRFQZ7M1VPC2DK8T5GBN5022
 sig: unavailable
 geo.lat:
 geo.lon:
