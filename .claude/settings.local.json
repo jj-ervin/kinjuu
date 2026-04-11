@@ -17,7 +17,15 @@
       "Bash(taskkill /F /IM dart.exe)",
       "Bash(rm -rf build)",
       "Bash(rm -rf .dart_tool/sqflite_common_ffi)",
-      "Bash(wmic process:*)"
+      "Bash(wmic process:*)",
+      "Bash(mv PASSCHANGELOG.md docs/PASS/)",
+      "Bash(mv HANDOFF_PASS_*.md docs/PASS/)",
+      "Bash(mv HANDSHAKE_PASS_*.md docs/PASS/)",
+      "Bash(mv HANDOFF_time_loc_normalization.md docs/PASS/)",
+      "Bash(mkdir -p logs)",
+      "Bash(mv flutter_*.log logs/)",
+      "Bash(echo \"logs/\")",
+      "Bash(echo \"build/\")"
     ]
   }
 }
