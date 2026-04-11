@@ -9,7 +9,9 @@
       "Read(//c/Users/Jess/AppData/Local/**)",
       "Read(//c/Users/Jess/**)",
       "Read(//c/dev//**)",
-      "Bash(/c/dev/tools/flutter/bin/flutter test:*)"
+      "Bash(/c/dev/tools/flutter/bin/flutter test:*)",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)"
     ]
   }
 }
