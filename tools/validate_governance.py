@@ -48,13 +48,23 @@ def run(args):
         if not (eco_dir / f).exists():
             diags.append({'severity': 'error', 'message': f'Missing required file: {f}', 'rule': 'STUB-GOVFILE'})
 
+    # Check devpath.md (development roadmap)
+    devpath = eco_dir / 'devpath.md'
+    if not devpath.exists():
+        diags.append({'severity': 'error', 'message': 'devpath.md missing (development roadmap)', 'rule': 'DEVPATH'})
+    else:
+        text = devpath.read_text(encoding='utf-8')
+        if len(text) < 100:
+            diags.append({'severity': 'warning', 'message': 'devpath.md is sparse (< 100 chars)', 'rule': 'DEVPATH'})
+
     # Warn about any [DECLARED] rules remaining
     enf = eco_dir / 'enforcement.yaml'
     if enf.exists():
         t = enf.read_text(encoding='utf-8')
-        count = t.count('[DECLARED]')
-        if count:
-            diags.append({'severity': 'warning', 'message': f'{count} rules still [DECLARED] in enforcement.yaml', 'rule': 'STUB-DECLARED'})
+        # Don't count DEVPATH rule in [DECLARED] count anymore
+        remaining = t.count('[DECLARED]') - (1 if 'devpath:' in t else 0)
+        if remaining > 0:
+            diags.append({'severity': 'warning', 'message': f'{remaining} rules still [DECLARED] in enforcement.yaml', 'rule': 'STUB-DECLARED'})
 
     # In stub mode downgrade errors to warnings
     if mode == 'stub':

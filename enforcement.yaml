@@ -12,7 +12,7 @@ enforcement:
     templates: false     # TODO: populate templates/
     passchangelog: false
     scaffold: false
-    devpath: false
+    devpath: true        # IMPLEMENTED: development roadmap required
     auditlog: false
     changeledger: false
     statehash: false

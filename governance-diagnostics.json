@@ -3,7 +3,7 @@
   "issues": [
     {
       "severity": "warning",
-      "message": "11 rules still [DECLARED] in enforcement.yaml",
+      "message": "10 rules still [DECLARED] in enforcement.yaml",
       "rule": "STUB-DECLARED"
     }
   ]
