@@ -1,0 +1,6 @@
+project:
+  name: kinjuu
+  type: eco
+  scaffold: stub
+  version: 0.1.0
+  governance_mode: stub  # Change to 'full' once all rules are [IMPLEMENTED]

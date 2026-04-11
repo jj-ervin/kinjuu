@@ -1,0 +1,10 @@
+arc:
+  arc_version: "0.1.0"
+  # TODO: define your agent request/response contracts
+  input_schema:
+    # TODO
+  output_schema:
+    timing:
+      # TODO: define timing fields
+  failure_modes:
+    # TODO: define failure modes

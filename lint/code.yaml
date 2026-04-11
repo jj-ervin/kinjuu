@@ -1,0 +1,5 @@
+lint:
+  # TODO: define lint standards for this project
+  languages: []
+  rules: []
+  severity: warning  # TODO: change to error once standards are set

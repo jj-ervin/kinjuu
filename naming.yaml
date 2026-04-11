@@ -1,0 +1,9 @@
+naming:
+  # TODO: define naming conventions for this project
+  conventions:
+    files:
+      pattern: "^[a-z0-9_-]+$"  # TODO: adjust
+    classes:
+      pattern: "^[A-Z][a-zA-Z0-9]+$"  # TODO: adjust
+    functions:
+      pattern: "^[a-z_][a-z0-9_]*$"  # TODO: adjust

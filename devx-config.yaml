@@ -1,0 +1,10 @@
+devx:
+  # TODO: configure devx hooks
+  hooks:
+    before:
+      - governance:validate
+  governance:validate:
+    enabled: true
+    # TODO: add pre-scaffold and pre-import hooks
+    scaffold: []
+    import: []

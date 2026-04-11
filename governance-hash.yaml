@@ -1,0 +1,2 @@
+# Run: python tools/validate_governance.py --update-hash
+governance_state_hash: ""

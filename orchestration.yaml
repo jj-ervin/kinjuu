@@ -1,0 +1,11 @@
+orchestration:
+  maor_version: "0.1.0"
+  # TODO: define routing and arbitration rules
+  routing_modes:
+    - direct  # TODO: add more modes
+  arbitration_rules:
+    fallback_agent: none  # TODO: set a real fallback agent
+  agent_selection:
+    # TODO
+  fallback_rules:
+    # TODO

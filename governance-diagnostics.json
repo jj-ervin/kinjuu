@@ -1,0 +1,10 @@
+{
+  "governance_mode": "stub",
+  "issues": [
+    {
+      "severity": "warning",
+      "message": "11 rules still [DECLARED] in enforcement.yaml",
+      "rule": "STUB-DECLARED"
+    }
+  ]
+}

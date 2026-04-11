@@ -1,0 +1,6 @@
+profiles:
+  # TODO: define agent profiles for this project
+  default:
+    timing_profile: standard
+    max_retries: 3
+    trust_level: standard

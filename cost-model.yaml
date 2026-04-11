@@ -1,0 +1,12 @@
+cost_model:
+  # TODO: define agent, SKU, and task cost profiles
+  agent_cost_profiles:
+    default:
+      cost_per_call: 0  # TODO
+  sku_cost_profiles:
+    default:
+      cost_weight: 1.0  # TODO
+  task_cost_profiles:
+    default:
+      cost_weight: 1.0  # TODO
+  minimum_cost_score: 70  # TODO: adjust to your standard

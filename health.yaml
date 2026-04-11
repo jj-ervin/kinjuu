@@ -1,0 +1,16 @@
+health:
+  # TODO: configure health dimensions for this project
+  dimensions:
+    governance_coverage:
+      weight: 0.3
+      # TODO: define scoring
+    test_coverage:
+      weight: 0.3
+      # TODO: define scoring
+    documentation:
+      weight: 0.2
+      # TODO: define scoring
+    dependency_freshness:
+      weight: 0.2
+      # TODO: define scoring
+  minimum_score: 80  # TODO: adjust to your standard

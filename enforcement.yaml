@@ -1,0 +1,46 @@
+enforcement:
+  mode: "hard"
+  description: "Stub governance for kinjuu. All rules are [DECLARED] — wire them as your standards solidify."
+  # HOW TO USE:
+  # 1. Replace [DECLARED] with [IMPLEMENTED] as you wire each rule into your own validator.
+  # 2. Set governance_mode: full in project.yaml when all rules are implemented.
+  # 3. Run: python tools/validate_governance.py --update-hash
+
+  checks:  # [DECLARED]
+    naming: false        # TODO: set to true and define naming rules in naming.yaml
+    lint: false          # TODO: configure lint/code.yaml
+    templates: false     # TODO: populate templates/
+    passchangelog: false
+    scaffold: false
+    devpath: false
+    auditlog: false
+    changeledger: false
+    statehash: false
+    skus: false
+    agent_log: false
+
+  health_enforcement:  # [DECLARED]
+    health_required: false          # TODO: set to true and implement compute_health.py
+    minimum_health_score: 0         # TODO: set your threshold (eco default: 80)
+
+  cost_model_enforcement:  # [DECLARED]
+    cost_model_required: false      # TODO: define cost-model.yaml
+    minimum_cost_score: 0           # TODO: set your threshold (eco default: 70)
+
+  telemetry_enforcement:  # [DECLARED]
+    telemetry_required: false       # TODO: define telemetry-schema.yaml
+
+  drift_detection:  # [DECLARED]
+    enabled: false                  # TODO: enable once governance hash is established
+
+  snapshot_enforcement:  # [DECLARED]
+    enabled: false                  # TODO: enable once first snapshot is created
+
+  sku_inheritance_enforcement:  # [DECLARED]
+    enabled: false                  # TODO: define sku-inheritance.yaml
+
+  passchangelog_enforcement:  # [DECLARED]
+    passchangelog_required: false   # TODO: start logging passes in passchangelog.md
+
+  agent_log_enforcement:  # [DECLARED]
+    agent_log_required: false       # TODO: start logging agent activity in agent-log.md

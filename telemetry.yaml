@@ -1,0 +1,8 @@
+telemetry:
+  # TODO: configure telemetry collection
+  enabled: false
+  events_dir: telemetry-events/
+  aggregates_dir: telemetry-aggregates/
+  rotation:
+    max_events: 5000
+    strategy: archive  # TODO: define rotation strategy

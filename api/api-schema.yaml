@@ -1,0 +1,8 @@
+api_schema:
+  version: "0.1.0"
+  # TODO: define API schema
+  governance:
+    required_fields: []   # TODO
+    versioning_rules: []  # TODO
+  telemetry:
+    required_fields: []   # TODO

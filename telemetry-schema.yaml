@@ -1,0 +1,9 @@
+telemetry_schema:
+  schema_version: "0.1.0"
+  # TODO: define your telemetry event fields
+  event_fields:
+    - event_id        # required
+    - timestamp       # required
+    - actor           # required
+    - event_type      # required
+    # TODO: add project-specific fields

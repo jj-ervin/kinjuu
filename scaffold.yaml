@@ -1,0 +1,14 @@
+scaffold:
+  folders:
+    - src/
+    - docs/
+    - tests/
+  files:
+    - README.md
+    - .gitignore
+  governance:
+    before:
+      scaffold:
+        - devx governance:validate
+      import:
+        - devx governance:validate

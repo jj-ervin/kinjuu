@@ -1,0 +1,3 @@
+sku_routing:
+  # TODO: define SKU routing rules
+  routes: []

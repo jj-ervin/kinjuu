@@ -1,0 +1,24 @@
+manifest:
+  project: kinjuu
+  version: 0.1.0
+  governance_mode: stub
+  files:
+    - project.yaml
+    - enforcement.yaml
+    - version.yaml
+    - devpath.md
+    - audit-log.md
+    - change-ledger.md
+    - passchangelog.md
+    - agent-log.md
+    - governance-hash.yaml
+    - README.md
+  directories:
+    - skus/
+    - tools/
+    - api/
+    - lint/
+    - templates/
+    - state-snapshots/
+    - telemetry-events/
+    - telemetry-aggregates/

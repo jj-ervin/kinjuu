@@ -1,0 +1,7 @@
+sku_inheritance:
+  inheritance_rules:
+    # TODO: define SKU inheritance for this project
+    # Example:
+    # - child: my-sku-pro
+    #   inherits_from: my-sku-core
+    #   overrides_allowed: [description]

@@ -1,0 +1,15 @@
+{
+  "governance_health": 100,
+  "drift_risk": 64,
+  "enforcement_strength": 10,
+  "audit_completeness": 100,
+  "ledger_completeness": 100,
+  "snapshot_freshness": 0,
+  "agent_activity_health": 100,
+  "sku_alignment": 0,
+  "devpath_integrity": 100,
+  "ci_status": 80,
+  "overall_score": 58,
+  "snapshot_timestamps": [],
+  "sku_alignment_details": []
+}
