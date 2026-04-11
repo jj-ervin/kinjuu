@@ -1,0 +1,7 @@
+{
+  "version": "1.0",
+  "human_escalation": true,
+  "validation_rules": [],
+  "allowlist": [],
+  "denylist": []
+}
