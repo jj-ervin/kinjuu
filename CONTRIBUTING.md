@@ -115,7 +115,7 @@ A transparent, auditable explanation of the cognitive chain:
 - Merge back to `main` after PASS completion
 
 ### Commit Messages
-```
+```text
 {type}: {summary}
 
 {body}
@@ -126,7 +126,7 @@ Co-Authored-By: {name} <{email}>
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
 
 Example:
-```
+```text
 feat: add obligation archive action and status
 
 - Implement archiveObligation() in controller

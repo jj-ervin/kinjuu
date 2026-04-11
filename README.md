@@ -4,8 +4,7 @@ A Flutter app for tracking bills, subscriptions, and other obligations with loca
 
 ## Repository Structure
 
-```
-plaintext
+```plaintext
 kinjuu/
 ├── docs/                          # Documentation & PASS process
 │   ├── architecture/              # Product specs, tech scaffold, PASS packet set

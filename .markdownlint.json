@@ -1,0 +1,19 @@
+{
+  "extends": "markdownlint/style/prettier",
+  "MD013": {
+    "line_length": 350,
+    "heading_line_length": 350,
+    "header_line_length": 350,
+    "code_blocks": false,
+    "code_line_length": 350,
+    "url_line_length": 350,
+    "table_line_length": 350
+  },
+  "MD024": {
+    "siblings_only": true
+  },
+  "MD026": false,
+  "MD036": false,
+  "MD047": false,
+  "MD060": false
+}
